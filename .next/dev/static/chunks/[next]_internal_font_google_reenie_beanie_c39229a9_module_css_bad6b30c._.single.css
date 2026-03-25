@@ -1,0 +1,30 @@
+/* [next]/internal/font/google/reenie_beanie_c39229a9.module.css [app-client] (css) */
+@font-face {
+  font-family: Reenie Beanie;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../media/abecc27c54fcd607-s.p.7714817e.woff2") format("woff2");
+  unicode-range: U+??, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+304, U+308, U+329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: Reenie Beanie Fallback;
+  src: local(Arial);
+  ascent-override: 98.63%;
+  descent-override: 32.88%;
+  line-gap-override: 0.0%;
+  size-adjust: 76.04%;
+}
+
+.reenie_beanie_c39229a9-module__-FtaUG__className {
+  font-family: Reenie Beanie, Reenie Beanie Fallback;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.reenie_beanie_c39229a9-module__-FtaUG__variable {
+  --font-reenie: "Reenie Beanie", "Reenie Beanie Fallback";
+}
+
+/*# sourceMappingURL=%5Bnext%5D_internal_font_google_reenie_beanie_c39229a9_module_css_bad6b30c._.single.css.map*/

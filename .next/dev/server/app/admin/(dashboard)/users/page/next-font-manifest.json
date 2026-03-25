@@ -1,0 +1,12 @@
+{
+  "pages": {},
+  "app": {
+    "[project]/app/admin/(dashboard)/users/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pagesUsingSizeAdjust": false
+}

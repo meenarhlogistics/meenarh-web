@@ -1,0 +1,137 @@
+{
+  "app": {
+    "[project]/app/_not-found/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(auth)/login/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/blog/[id]/edit/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/blog/new/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/blog/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/customers/[id]/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/customers/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/orders/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/promo-codes/[id]/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/promo-codes/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/settings/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/admin/(dashboard)/users/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/blog/[slug]/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/blog/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/dashboard/cart/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/dashboard/checkout/[id]/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/dashboard/orders/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/dashboard/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/dashboard/track/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/forgot-password/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/login/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/reset-password/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/signup/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ],
+    "[project]/app/verify-phone-success/page": [
+      "static/media/e8f2fbee2754df70-s.p.9b7a96b4.woff2",
+      "static/media/248e1dc0efc99276-s.p.8a6b2436.woff2",
+      "static/media/c9e42e3eae6237c2-s.p.24d96596.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}
