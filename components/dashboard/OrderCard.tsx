@@ -78,7 +78,9 @@ export function OrderCard({ order }: OrderCardProps) {
           <div>
             <p className="text-sm text-muted-foreground">Price</p>
             <p className="font-semibold text-foreground">
-              ₦{Number(order.price).toFixed(2)}
+              {order.price != null
+                ? `₦${Number(order.price).toFixed(2)}`
+                : "—"}
             </p>
           </div>
           

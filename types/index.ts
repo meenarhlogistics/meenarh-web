@@ -19,7 +19,12 @@ export interface Order {
   item_value?: number;
   quantity?: number;
   is_fragile?: boolean;
-  price: number;
+  price: number | null;
+  pickup_region_id?: number | null;
+  delivery_region_id?: number | null;
+  eta_min_hours?: number | null;
+  eta_max_hours?: number | null;
+  eta_label?: string | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -36,8 +41,8 @@ export interface OrderDetail extends Order {
   sender_phone: string;
   receiver_phone: string;
   package_description?: string;
-  zone_id?: number;
-  distance_km?: number;
+  zone_id?: number | null;
+  distance_km?: number | null;
   events: OrderEvent[];
 }
 
@@ -68,6 +73,8 @@ export interface CreateOrderRequest {
   is_fragile?: boolean;
   zone_id?: number;
   distance_km?: number;
+  pickup_region_id?: number;
+  delivery_region_id?: number;
 }
 
 // Cart types
@@ -84,9 +91,14 @@ export interface CartItem {
   item_value?: number;
   quantity?: number;
   is_fragile?: boolean;
-  zone_id?: number;
-  distance_km?: number;
-  estimated_price?: number;
+  zone_id?: number | null;
+  distance_km?: number | null;
+  pickup_region_id?: number | null;
+  delivery_region_id?: number | null;
+  eta_min_hours?: number | null;
+  eta_max_hours?: number | null;
+  eta_label?: string | null;
+  estimated_price?: number | null;
   created_at: string;
   updated_at?: string;
 }
@@ -135,7 +147,7 @@ export interface AddToCartResponse {
   message: string;
   data: {
     id: number;
-    estimated_price: number;
+    estimated_price: number | null;
   };
 }
 

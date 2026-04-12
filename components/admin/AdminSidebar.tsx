@@ -14,12 +14,14 @@ import {
   Tag,
   Settings,
   Shield,
+  MapPinned,
 } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Orders", icon: Package },
   { href: "/admin/customers", label: "Customers", icon: Users },
+  { href: "/admin/region-rates", label: "Delivery rates", icon: MapPinned },
   { href: "/admin/blog", label: "Blog", icon: FileText },
   { href: "/admin/promo-codes", label: "Promo Codes", icon: Tag },
   { href: "/admin/settings", label: "Settings", icon: Settings },

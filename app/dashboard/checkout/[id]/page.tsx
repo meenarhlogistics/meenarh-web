@@ -4,20 +4,16 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button, Card } from "@/components/ui";
 import { useCartStore } from "@/lib/store/cartStore";
-import { cartApi } from "@/lib/api/cart";
+import { paymentsApi } from "@/lib/api/payments";
 
 export default function SingleItemCheckoutPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = Number(params.id);
-  const { items, fetchCart, removeItem } = useCartStore();
+  const { items, fetchCart } = useCartStore();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState<{
-    tracking_number: string;
-    price: number;
-  } | null>(null);
 
   const selectedItem = items.find((item) => item.id === itemId);
 
@@ -37,20 +33,16 @@ export default function SingleItemCheckoutPage() {
     setIsProcessing(true);
 
     try {
-      // Create a single order from this cart item
-      const response = await cartApi.checkoutSingleItem(itemId);
-      
-      if (response.success && response.data.orders.length > 0) {
-        setSuccess({
-          tracking_number: response.data.orders[0].tracking_number,
-          price: response.data.orders[0].price,
-        });
-        
-        // Remove item from cart after successful checkout
-        await removeItem(itemId);
-      } else {
-        setError("Failed to create order");
+      const init = await paymentsApi.initializePaystack({
+        scope: "single_item",
+        cart_item_id: itemId,
+      });
+      const url = init.data?.authorization_url;
+      if (!url) {
+        setError("Could not start payment. Please try again.");
+        return;
       }
+      window.location.href = url;
     } catch (err) {
       console.error("Checkout error:", err);
       const error = err as { response?: { data?: { message?: string } } };
@@ -61,83 +53,6 @@ export default function SingleItemCheckoutPage() {
       setIsProcessing(false);
     }
   };
-
-  // Success State
-  if (success) {
-    return (
-      <div className="max-w-3xl mx-auto">
-        <Card className="p-6 sm:p-8 text-center">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg
-              className="w-8 h-8 sm:w-10 sm:h-10 text-primary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          
-          <h2 className="text-2xl sm:text-3xl font-semibold text-foreground mb-2">
-            Payment Successful!
-          </h2>
-          
-          <p className="text-muted-foreground mb-8">
-            Your order has been created successfully
-          </p>
-          
-          <div className="bg-muted rounded-lg p-4 sm:p-6 mb-8">
-            <p className="text-sm text-muted-foreground mb-4">Tracking Number</p>
-            <div className="bg-background rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="text-center sm:text-left">
-                <p className="font-mono text-lg sm:text-xl font-semibold text-foreground">
-                  {success.tracking_number}
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-2">
-                <p className="text-sm sm:text-base font-semibold text-primary">
-                  ₦{Number(success.price).toFixed(2)}
-                </p>
-                <button
-                  onClick={() =>
-                    navigator.clipboard.writeText(success.tracking_number)
-                  }
-                  className="text-xs text-muted-foreground hover:text-foreground"
-                  title="Copy tracking number"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button
-              onClick={() => router.push("/dashboard/cart")}
-              variant="secondary"
-              size="lg"
-              className="w-full sm:w-auto"
-            >
-              Back to Cart
-            </Button>
-            <Button
-              onClick={() => router.push("/dashboard/orders")}
-              variant="primary"
-              size="lg"
-              className="w-full sm:w-auto"
-            >
-              View My Orders
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
 
   // Loading State
   if (!selectedItem && items.length === 0) {
@@ -162,7 +77,7 @@ export default function SingleItemCheckoutPage() {
             Item Not Found
           </h2>
           <p className="text-muted-foreground mb-6">
-            The item you're trying to checkout is no longer in your cart.
+            The item you are trying to checkout is no longer in your cart.
           </p>
           <Button
             onClick={() => router.push("/dashboard/cart")}
@@ -241,29 +156,11 @@ export default function SingleItemCheckoutPage() {
         </div>
       </Card>
 
-      {/* Payment Method */}
       <Card className="p-4 sm:p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">
-          Payment Method
-        </h2>
-        <div className="space-y-3">
-          <div className="p-4 bg-muted rounded-lg border-2 border-primary">
-            <div className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center flex-shrink-0">
-                <div className="w-3 h-3 rounded-full bg-primary"></div>
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Pay on Delivery</p>
-                <p className="text-xs text-muted-foreground">
-                  Payment will be collected during delivery
-                </p>
-              </div>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            * This is a demo payment. No actual payment will be processed.
-          </p>
-        </div>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Payment</h2>
+        <p className="text-sm text-muted-foreground">
+          You will be redirected to Paystack to complete payment. You can return to this site from the receipt page to see your tracking number.
+        </p>
       </Card>
 
       {/* Action Buttons */}
@@ -286,7 +183,7 @@ export default function SingleItemCheckoutPage() {
           disabled={isProcessing}
           className="w-full sm:w-auto"
         >
-          {isProcessing ? "Processing..." : `Pay ₦${Number(selectedItem.estimated_price).toFixed(2)}`}
+          {isProcessing ? "Redirecting…" : `Pay with Paystack ₦${Number(selectedItem.estimated_price).toFixed(2)}`}
         </Button>
       </div>
     </div>

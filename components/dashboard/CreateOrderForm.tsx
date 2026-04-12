@@ -8,13 +8,12 @@ import { PaymentStep } from "./PaymentStep";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useCartStore } from "@/lib/store/cartStore";
 import type { CreateOrderRequest } from "@/types";
-
-const ZONES = [
-  { value: "", label: "Select zone" },
-  { value: "1", label: "Mainland" },
-  { value: "2", label: "Island" },
-  { value: "3", label: "Expanding" },
-];
+import {
+  regionsApi,
+  type PickupRegion,
+  type DeliveryRegion,
+  type RegionQuote,
+} from "@/lib/api/regions";
 
 const STEPS = [
   { id: 1, label: "Delivery Details", description: "Package information" },
@@ -38,10 +37,18 @@ export function CreateOrderForm() {
     item_value: undefined,
     quantity: 1,
     is_fragile: false,
-    zone_id: undefined,
-    distance_km: undefined,
+    pickup_region_id: undefined,
+    delivery_region_id: undefined,
   });
-  
+
+  const [pickups, setPickups] = useState<PickupRegion[]>([]);
+  const [deliveries, setDeliveries] = useState<DeliveryRegion[]>([]);
+  const [quote, setQuote] = useState<RegionQuote | null>(null);
+  const [pickupsLoading, setPickupsLoading] = useState(true);
+  const [deliveriesLoading, setDeliveriesLoading] = useState(false);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -57,16 +64,128 @@ export function CreateOrderForm() {
     }
   }, [user]);
 
+  useEffect(() => {
+    let cancelled = false;
+    setPickupsLoading(true);
+    regionsApi
+      .getPickups()
+      .then((data) => {
+        if (!cancelled) setPickups(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Could not load pickup areas. Please refresh.");
+      })
+      .finally(() => {
+        if (!cancelled) setPickupsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!formData.pickup_region_id) {
+      setDeliveries([]);
+      return;
+    }
+    let cancelled = false;
+    setDeliveriesLoading(true);
+    regionsApi
+      .getDeliveriesForPickup(formData.pickup_region_id)
+      .then((data) => {
+        if (!cancelled) setDeliveries(data);
+      })
+      .catch(() => {
+        if (!cancelled) setDeliveries([]);
+      })
+      .finally(() => {
+        if (!cancelled) setDeliveriesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.pickup_region_id]);
+
+  useEffect(() => {
+    if (!formData.pickup_region_id || !formData.delivery_region_id) {
+      setQuote(null);
+      setQuoteError("");
+      return;
+    }
+    let cancelled = false;
+    setQuoteLoading(true);
+    setQuoteError("");
+    regionsApi
+      .getQuote(formData.pickup_region_id, formData.delivery_region_id)
+      .then((q) => {
+        if (cancelled) return;
+        if (!q) {
+          setQuote(null);
+          setQuoteError("No active rate for this combination.");
+          return;
+        }
+        setQuote(q);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setQuote(null);
+          setQuoteError("Could not load price estimate.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setQuoteLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.pickup_region_id, formData.delivery_region_id]);
+
+  const pickupOptions = [
+    { value: "", label: pickupsLoading ? "Loading…" : "Select pickup area" },
+    ...pickups.map((p) => ({ value: String(p.id), label: p.name })),
+  ];
+
+  const deliveryOptions = [
+    {
+      value: "",
+      label: !formData.pickup_region_id
+        ? "Select pickup first"
+        : deliveriesLoading
+          ? "Loading…"
+          : "Select delivery area",
+    },
+    ...deliveries.map((d) => ({ value: String(d.id), label: d.name })),
+  ];
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
     const { name, value } = e.target;
+    if (name === "pickup_region_id") {
+      setFormData((prev) => ({
+        ...prev,
+        pickup_region_id: value ? Number(value) : undefined,
+        delivery_region_id: undefined,
+      }));
+      setError("");
+      setQuoteError("");
+      return;
+    }
+    if (name === "delivery_region_id") {
+      setFormData((prev) => ({
+        ...prev,
+        delivery_region_id: value ? Number(value) : undefined,
+      }));
+      setError("");
+      setQuoteError("");
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       [name]:
-        name === "zone_id" || name === "distance_km" || name === "item_value" || name === "quantity"
+        name === "item_value" || name === "quantity"
           ? value
             ? Number(value)
             : undefined
@@ -82,6 +201,14 @@ export function CreateOrderForm() {
   const handleAddToCart = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!formData.pickup_region_id || !formData.delivery_region_id) {
+      setError("Select pickup area and delivery area.");
+      return;
+    }
+    if (!quote) {
+      setError(quoteError || "No price available for this route.");
+      return;
+    }
     setIsLoading(true);
 
     try {
@@ -96,11 +223,11 @@ export function CreateOrderForm() {
         item_value: formData.item_value,
         quantity: formData.quantity,
         is_fragile: formData.is_fragile,
-        zone_id: formData.zone_id,
-        distance_km: formData.distance_km,
+        pickup_region_id: formData.pickup_region_id,
+        delivery_region_id: formData.delivery_region_id,
       });
-      
-      // Reset only receiver and package fields
+
+      // Reset only receiver, package, and region fields
       setFormData((prev) => ({
         ...prev,
         receiver_name: "",
@@ -110,8 +237,8 @@ export function CreateOrderForm() {
         item_value: undefined,
         quantity: 1,
         is_fragile: false,
-        zone_id: undefined,
-        distance_km: undefined,
+        pickup_region_id: undefined,
+        delivery_region_id: undefined,
       }));
     } catch (err) {
       console.error("Add to cart error:", err);
@@ -270,24 +397,70 @@ export function CreateOrderForm() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Select
-                  label="Zone"
-                  name="zone_id"
-                  options={ZONES}
-                  value={formData.zone_id || ""}
+                  label="Pickup area"
+                  name="pickup_region_id"
+                  options={pickupOptions}
+                  value={formData.pickup_region_id ?? ""}
                   onChange={handleChange}
-                  id="zone_id"
+                  id="pickup_region_id"
+                  disabled={pickupsLoading || pickups.length === 0}
                 />
-                <Input
-                  label="Distance (km)"
-                  name="distance_km"
-                  type="number"
-                  step="0.1"
-                  placeholder="e.g., 15.5"
-                  value={formData.distance_km || ""}
+                <Select
+                  label="Delivery area"
+                  name="delivery_region_id"
+                  options={deliveryOptions}
+                  value={formData.delivery_region_id ?? ""}
                   onChange={handleChange}
-                  id="distance_km"
+                  id="delivery_region_id"
+                  disabled={
+                    !formData.pickup_region_id ||
+                    deliveriesLoading ||
+                    deliveries.length === 0
+                  }
                 />
               </div>
+              {formData.pickup_region_id &&
+                !deliveriesLoading &&
+                deliveries.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No delivery areas are configured for this pickup yet. Choose another pickup or
+                    contact support.
+                  </p>
+                )}
+
+              {(quoteLoading || quote || quoteError) && (
+                <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
+                  {quoteLoading && (
+                    <p className="text-muted-foreground">Loading price and ETA…</p>
+                  )}
+                  {!quoteLoading && quoteError && (
+                    <p className="text-destructive">{quoteError}</p>
+                  )}
+                  {!quoteLoading && quote && (
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                          Estimated delivery
+                        </p>
+                        <p className="font-medium text-foreground">
+                          {quote.eta_display ||
+                            (quote.eta_min_hours != null && quote.eta_max_hours != null
+                              ? `${quote.eta_min_hours}–${quote.eta_max_hours} hrs`
+                              : "—")}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                          Flat rate
+                        </p>
+                        <p className="text-xl font-semibold text-primary">
+                          ₦{Number(quote.price_ngn).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </Card>
 
@@ -297,7 +470,13 @@ export function CreateOrderForm() {
               type="submit"
               variant="secondary"
               size="lg"
-              disabled={isLoading}
+              disabled={
+                isLoading ||
+                pickups.length === 0 ||
+                !quote ||
+                !formData.pickup_region_id ||
+                !formData.delivery_region_id
+              }
             >
               {isLoading ? "Adding..." : "Add to Cart"}
             </Button>

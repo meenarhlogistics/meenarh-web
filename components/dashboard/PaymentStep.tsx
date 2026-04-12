@@ -5,6 +5,7 @@ import { Button, Card, Input } from "@/components/ui";
 import { OrderStepper } from "./OrderStepper";
 import { useCartStore } from "@/lib/store/cartStore";
 import apiClient from "@/lib/api/client";
+import { paymentsApi } from "@/lib/api/payments";
 
 interface PaymentStepProps {
   onBack: () => void;
@@ -17,14 +18,9 @@ const STEPS = [
 ];
 
 export function PaymentStep({ onBack }: PaymentStepProps) {
-  const { checkout, getTotalPrice, getItemCount } = useCartStore();
+  const { getTotalPrice, getItemCount } = useCartStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState<{
-    orders: Array<{ tracking_number: string; price: number }>;
-    total_orders: number;
-    total_price: number;
-  } | null>(null);
 
   const [promoCode, setPromoCode] = useState("");
   const [promoValidating, setPromoValidating] = useState(false);
@@ -68,8 +64,16 @@ export function PaymentStep({ onBack }: PaymentStepProps) {
     setIsProcessing(true);
 
     try {
-      const result = await checkout();
-      setSuccess(result);
+      const init = await paymentsApi.initializePaystack({
+        scope: "full_cart",
+        promo_code: promoResult?.valid ? promoCode.trim().toUpperCase() : undefined,
+      });
+      const url = init.data?.authorization_url;
+      if (!url) {
+        setError("Could not start payment. Please try again.");
+        return;
+      }
+      window.location.href = url;
     } catch (err) {
       console.error("Checkout error:", err);
       const error = err as { response?: { data?: { message?: string } } };
@@ -81,105 +85,6 @@ export function PaymentStep({ onBack }: PaymentStepProps) {
     }
   };
 
-  // Success State
-  if (success) {
-    return (
-      <div className="max-w-3xl mx-auto space-y-8">
-        <OrderStepper currentStep={3} steps={STEPS} />
-        
-        <Card className="p-8 text-center">
-          <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg
-              className="w-10 h-10 text-primary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          
-          <h2 className="text-3xl font-semibold text-foreground mb-2">
-            Payment Successful!
-          </h2>
-          
-          <p className="text-muted-foreground mb-8">
-            {success.total_orders} {success.total_orders === 1 ? "order" : "orders"} created successfully
-          </p>
-          
-          <div className="bg-muted rounded-lg p-6 mb-8">
-            <p className="text-sm text-muted-foreground mb-4">Tracking Numbers</p>
-            <div className="space-y-3">
-              {success.orders.map((order, index) => (
-                <div
-                  key={order.tracking_number}
-                  className="bg-background rounded-lg p-4 flex items-center justify-between"
-                >
-                  <div className="text-left">
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Order {index + 1}
-                    </p>
-                    <p className="font-mono text-lg font-semibold text-foreground">
-                      {order.tracking_number}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-primary">
-                      ₦{Number(order.price).toFixed(2)}
-                    </p>
-                    <button
-                      onClick={() =>
-                        navigator.clipboard.writeText(order.tracking_number)
-                      }
-                      className="text-xs text-muted-foreground hover:text-foreground mt-1"
-                      title="Copy tracking number"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="border-t border-border mt-6 pt-4">
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-semibold text-foreground">
-                  Total Paid
-                </span>
-                <span className="text-2xl font-bold text-primary">
-                  ₦{success.total_price.toFixed(2)}
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button
-              onClick={() => (window.location.href = "/dashboard")}
-              variant="primary"
-              size="lg"
-            >
-              Create New Order
-            </Button>
-            <Button
-              onClick={() => (window.location.href = "/dashboard/orders")}
-              variant="secondary"
-              size="lg"
-            >
-              View My Orders
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  // Payment Form
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <OrderStepper currentStep={3} steps={STEPS} />
@@ -270,29 +175,11 @@ export function PaymentStep({ onBack }: PaymentStepProps) {
         </div>
       </Card>
 
-      {/* Mock Payment Method */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">
-          Payment Method
-        </h2>
-        <div className="space-y-3">
-          <div className="p-4 bg-muted rounded-lg border-2 border-primary">
-            <div className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center">
-                <div className="w-3 h-3 rounded-full bg-primary"></div>
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Pay on Delivery</p>
-                <p className="text-xs text-muted-foreground">
-                  Payment will be collected during delivery
-                </p>
-              </div>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            * This is a demo payment. No actual payment will be processed.
-          </p>
-        </div>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Payment</h2>
+        <p className="text-sm text-muted-foreground">
+          You will be redirected to Paystack to pay securely by card or bank. After payment you will return here to see your tracking numbers.
+        </p>
       </Card>
 
       {/* Action Buttons */}
@@ -313,7 +200,7 @@ export function PaymentStep({ onBack }: PaymentStepProps) {
           onClick={handleCheckout}
           disabled={isProcessing || itemCount === 0}
         >
-          {isProcessing ? "Processing..." : `Process Payment (₦${finalPrice.toFixed(2)})`}
+          {isProcessing ? "Redirecting…" : `Pay with Paystack (₦${finalPrice.toFixed(2)})`}
         </Button>
       </div>
     </div>

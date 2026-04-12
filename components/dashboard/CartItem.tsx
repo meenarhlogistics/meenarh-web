@@ -11,6 +11,15 @@ interface CartItemProps {
   onCheckout?: (itemId: number) => void;
 }
 
+function formatEta(item: CartItemType): string | null {
+  if (item.eta_label && String(item.eta_label).trim()) return item.eta_label.trim();
+  if (item.eta_min_hours != null && item.eta_max_hours != null) {
+    if (item.eta_min_hours === item.eta_max_hours) return `${item.eta_min_hours} hrs`;
+    return `${item.eta_min_hours}–${item.eta_max_hours} hrs`;
+  }
+  return null;
+}
+
 export function CartItem({ item, onEdit, onCheckout }: CartItemProps) {
   const { removeItem } = useCartStore();
   const [isRemoving, setIsRemoving] = React.useState(false);
@@ -132,19 +141,22 @@ export function CartItem({ item, onEdit, onCheckout }: CartItemProps) {
 
         {/* Footer with price and checkout */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border">
-          <div className="flex items-center justify-between sm:justify-start gap-4 flex-1">
-            <p className="text-xs text-muted-foreground">
-              {item.distance_km && `${item.distance_km} km`}
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between sm:justify-start gap-2 flex-1">
+            <div className="text-xs text-muted-foreground space-y-0.5">
+              {formatEta(item) && <p>ETA: {formatEta(item)}</p>}
+              {item.distance_km != null && Number(item.distance_km) > 0 && (
+                <p>{item.distance_km} km (legacy)</p>
+              )}
+            </div>
             <p className="text-lg sm:text-xl font-semibold text-primary">
-              {item.estimated_price
+              {item.estimated_price != null
                 ? `₦${Number(item.estimated_price).toFixed(2)}`
                 : "Price TBD"}
             </p>
           </div>
-          
+
           {/* Individual Checkout Button */}
-          {onCheckout && item.estimated_price && (
+          {onCheckout && item.estimated_price != null && (
             <Button
               variant="primary"
               size="sm"

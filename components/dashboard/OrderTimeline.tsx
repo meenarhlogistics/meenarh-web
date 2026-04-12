@@ -4,6 +4,15 @@ interface OrderTimelineProps {
   order: OrderDetail;
 }
 
+function etaSummary(order: OrderDetail): string | null {
+  if (order.eta_label && String(order.eta_label).trim()) return order.eta_label.trim();
+  if (order.eta_min_hours != null && order.eta_max_hours != null) {
+    if (order.eta_min_hours === order.eta_max_hours) return `${order.eta_min_hours} hrs`;
+    return `${order.eta_min_hours}–${order.eta_max_hours} hrs`;
+  }
+  return null;
+}
+
 export function OrderTimeline({ order }: OrderTimelineProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -76,13 +85,21 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
           </div>
         )}
 
-        <div className="mt-6 pt-6 border-t border-border flex items-center justify-between">
+        <div className="mt-6 pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <p className="text-xs text-muted-foreground">Price</p>
             <p className="text-xl font-semibold text-foreground">
-              ₦{Number(order.price).toFixed(2)}
+              {order.price != null
+                ? `₦${Number(order.price).toFixed(2)}`
+                : "—"}
             </p>
           </div>
+          {etaSummary(order) && (
+            <div>
+              <p className="text-xs text-muted-foreground">Estimated delivery</p>
+              <p className="text-lg font-medium text-foreground">{etaSummary(order)}</p>
+            </div>
+          )}
           <div>
             <p className="text-xs text-muted-foreground">Current Status</p>
             <p className="text-lg font-medium text-primary">{order.status}</p>

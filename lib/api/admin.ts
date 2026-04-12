@@ -149,6 +149,80 @@ export const adminApi = {
     return res.data;
   },
 
+  // Region flat rates (pickup × delivery matrix)
+  async listRegionPickups() {
+    const res = await adminClient.get("/admin/regions/pickups");
+    return res.data;
+  },
+  async createRegionPickup(data: {
+    name: string;
+    slug?: string | null;
+    sort_order?: number;
+    is_active?: boolean;
+  }) {
+    const res = await adminClient.post("/admin/regions/pickups", data);
+    return res.data;
+  },
+  async updateRegionPickup(id: number, data: Record<string, unknown>) {
+    const res = await adminClient.put(`/admin/regions/pickups/${id}`, data);
+    return res.data;
+  },
+  async deleteRegionPickup(id: number) {
+    const res = await adminClient.delete(`/admin/regions/pickups/${id}`);
+    return res.data;
+  },
+
+  async listRegionDeliveries() {
+    const res = await adminClient.get("/admin/regions/deliveries");
+    return res.data;
+  },
+  async createRegionDelivery(data: {
+    name: string;
+    description?: string | null;
+    sort_order?: number;
+    is_active?: boolean;
+  }) {
+    const res = await adminClient.post("/admin/regions/deliveries", data);
+    return res.data;
+  },
+  async updateRegionDelivery(id: number, data: Record<string, unknown>) {
+    const res = await adminClient.put(`/admin/regions/deliveries/${id}`, data);
+    return res.data;
+  },
+  async deleteRegionDelivery(id: number) {
+    const res = await adminClient.delete(`/admin/regions/deliveries/${id}`);
+    return res.data;
+  },
+
+  async listRegionRates(pickup_region_id?: number) {
+    const q =
+      pickup_region_id != null && pickup_region_id > 0
+        ? `?pickup_region_id=${pickup_region_id}`
+        : "";
+    const res = await adminClient.get(`/admin/regions/rates${q}`);
+    return res.data;
+  },
+  async createRegionRate(data: {
+    pickup_region_id: number;
+    delivery_region_id: number;
+    price_ngn: number;
+    eta_min_hours: number;
+    eta_max_hours: number;
+    eta_label?: string | null;
+    is_active?: boolean;
+  }) {
+    const res = await adminClient.post("/admin/regions/rates", data);
+    return res.data;
+  },
+  async updateRegionRate(id: number, data: Record<string, unknown>) {
+    const res = await adminClient.put(`/admin/regions/rates/${id}`, data);
+    return res.data;
+  },
+  async deleteRegionRate(id: number) {
+    const res = await adminClient.delete(`/admin/regions/rates/${id}`);
+    return res.data;
+  },
+
   // Admin users
   async createAdminUser(name: string, email: string, password: string, role: "admin" | "staff") {
     const res = await adminClient.post("/admin/users", { name, email, password, role });
