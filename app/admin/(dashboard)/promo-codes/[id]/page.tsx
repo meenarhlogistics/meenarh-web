@@ -73,9 +73,9 @@ export default function PromoCodeDetailPage() {
       </div>
 
       {/* Info Card */}
-      <div className="bg-card border border-border rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <h1 className="text-2xl font-semibold font-mono text-foreground">{promo.code}</h1>
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+          <h1 className="text-xl sm:text-2xl font-semibold font-mono text-foreground break-all">{promo.code}</h1>
           <Badge variant={promo.is_active && !isExpired ? "success" : "error"}>
             {promo.is_active ? (isExpired ? "Expired" : "Active") : "Inactive"}
           </Badge>
@@ -105,10 +105,11 @@ export default function PromoCodeDetailPage() {
 
       {/* Usage Log */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="p-6 border-b border-border">
+        <div className="p-4 sm:p-6 border-b border-border">
           <h2 className="text-lg font-medium text-foreground">Usage History</h2>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[560px]">
           <thead>
             <tr className="border-b border-border bg-muted/30">
               <th className="text-left p-4 font-medium text-muted-foreground">Customer</th>
@@ -137,6 +138,7 @@ export default function PromoCodeDetailPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

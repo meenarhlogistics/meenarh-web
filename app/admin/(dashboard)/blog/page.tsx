@@ -55,13 +55,13 @@ export default function BlogListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Blog Posts</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Blog Posts</h1>
           <p className="text-muted-foreground text-sm mt-1">{posts.length} post{posts.length !== 1 ? "s" : ""}</p>
         </div>
-        <Link href="/admin/blog/new">
-          <Button variant="primary">New Post</Button>
+        <Link href="/admin/blog/new" className="w-full sm:w-auto shrink-0">
+          <Button variant="primary" className="w-full sm:w-auto">New Post</Button>
         </Link>
       </div>
 
@@ -74,7 +74,8 @@ export default function BlogListPage() {
         </div>
       ) : (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[720px]">
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="text-left p-4 font-medium text-muted-foreground">Title</th>
@@ -112,6 +113,7 @@ export default function BlogListPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

@@ -55,7 +55,7 @@ export default function CustomersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Customers</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Customers</h1>
         <p className="text-muted-foreground text-sm mt-1">{customers.length} registered customer{customers.length !== 1 ? "s" : ""}</p>
       </div>
 
@@ -67,7 +67,8 @@ export default function CustomersPage() {
       />
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-border bg-muted/30">
               <th className="text-left p-4 font-medium text-muted-foreground">Name</th>
@@ -101,6 +102,7 @@ export default function CustomersPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

@@ -88,7 +88,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Analytics Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Analytics Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Last 30 days overview</p>
       </div>
 
@@ -103,10 +103,11 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Trends Chart */}
-      <div className="bg-card border border-border rounded-xl p-6">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
         <h2 className="text-lg font-medium text-foreground mb-4">Visitor &amp; Order Trends</h2>
         {trends.length > 0 ? (
-          <ResponsiveContainer width="100%" height={320}>
+          <div className="h-[240px] sm:h-[320px] w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trends}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
@@ -128,6 +129,7 @@ export default function AdminDashboardPage() {
               <Bar dataKey="orders" fill="var(--chart-2)" name="Orders" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+          </div>
         ) : (
           <p className="text-muted-foreground text-sm py-10 text-center">No trend data available yet.</p>
         )}
@@ -144,7 +146,7 @@ export default function AdminDashboardPage() {
 
 function LocationTable({ title, data }: { title: string; data: { location: string; request_count: number }[] }) {
   return (
-    <div className="bg-card border border-border rounded-xl p-6">
+    <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
       <h2 className="text-lg font-medium text-foreground mb-4">{title}</h2>
       {data.length > 0 ? (
         <div className="overflow-x-auto">

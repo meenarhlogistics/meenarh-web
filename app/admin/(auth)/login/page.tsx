@@ -64,9 +64,9 @@ export default function AdminLoginPage() {
           <span className="text-xl font-semibold text-foreground">Meenarh Admin</span>
         </Link>
 
-        <div className="bg-card rounded-xl shadow-lg border border-border p-8">
+        <div className="bg-card rounded-xl shadow-lg border border-border p-6 sm:p-8">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-semibold text-foreground mb-2">Admin Login</h1>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-foreground mb-2">Admin Login</h1>
             <p className="text-muted-foreground">Sign in to the admin panel</p>
           </div>
 

@@ -66,7 +66,7 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Company Settings</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Company Settings</h1>
         <p className="text-muted-foreground text-sm mt-1">Manage your company contact details and information</p>
       </div>
 
@@ -81,7 +81,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-4">
         {SETTING_FIELDS.map((field) => (
           <Input
             key={field.key}
@@ -94,7 +94,7 @@ export default function SettingsPage() {
         ))}
 
         <div className="pt-4">
-          <Button variant="primary" onClick={handleSave} disabled={saving}>
+          <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
             {saving ? "Saving..." : "Save Settings"}
           </Button>
         </div>

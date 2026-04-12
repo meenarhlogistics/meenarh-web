@@ -44,16 +44,16 @@ export default function NewBlogPostPage() {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-foreground">New Blog Post</h1>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => router.push("/admin/blog")} disabled={saving}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">New Blog Post</h1>
+        <div className="flex flex-col-reverse sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
+          <Button variant="secondary" onClick={() => router.push("/admin/blog")} disabled={saving} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button variant="secondary" onClick={() => handleSave("draft")} disabled={saving}>
+          <Button variant="secondary" onClick={() => handleSave("draft")} disabled={saving} className="w-full sm:w-auto">
             {saving ? "Saving..." : "Save Draft"}
           </Button>
-          <Button variant="primary" onClick={() => handleSave("published")} disabled={saving}>
+          <Button variant="primary" onClick={() => handleSave("published")} disabled={saving} className="w-full sm:w-auto">
             {saving ? "Publishing..." : "Publish"}
           </Button>
         </div>

@@ -78,25 +78,26 @@ export default function PromoCodesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Promo Codes</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Promo Codes</h1>
           <p className="text-muted-foreground text-sm mt-1">{codes.length} promo code{codes.length !== 1 ? "s" : ""}</p>
         </div>
-        <Button variant="primary" onClick={() => setShowForm(!showForm)}>
+        <Button variant="primary" onClick={() => setShowForm(!showForm)} className="w-full sm:w-auto shrink-0">
           {showForm ? "Cancel" : "New Code"}
         </Button>
       </div>
 
       {showForm && (
-        <div className="bg-card border border-border rounded-xl p-6">
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
           <h2 className="text-lg font-medium text-foreground mb-4">Create Promo Code</h2>
           <PromoCodeForm onSubmit={handleCreate} submitLabel="Create Code" />
         </div>
       )}
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[720px]">
           <thead>
             <tr className="border-b border-border bg-muted/30">
               <th className="text-left p-4 font-medium text-muted-foreground">Code</th>
@@ -155,6 +156,7 @@ export default function PromoCodesPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

@@ -38,3 +38,680 @@
 [02:20:01.286] Browser ERROR   Fetch orders error: {"code":"ERR_BAD_REQUEST","config":{"adapter":["xhr","http","fetch"],"allowAbsoluteUrls":true,"baseURL":"http://localhost:5000/api","env":{},"headers":{"Accept":"application/json, text/plain, */*","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJmaXJzdEBleGFtcGxlLmNvbSIsInR5cGUiOiJjdXN0b21lciIsImlhdCI6MTc3NjAxMDk5OCwiZXhwIjoxNzc2NjE1Nzk4fQ.31O39BOMGoII3pxo8Lg8NVAt5uBITBnbOpI0WTk3eBE","Content-Type":"application/json"},"maxBodyLength":-1,"maxContentLength":-1,"method":"get","timeout":0,"transformRequest":[null],"transformResponse":[null],"transitional":{"clarifyTimeoutError":false,"forcedJSONParsing":true,"legacyInterceptorReqResOrdering":true,"silentJSONParsing":true},"url":"/user/orders","xsrfCookieName":"XSRF-TOKEN","xsrfHeaderName":"X-XSRF-TOKEN"},"message":"Request failed with status code 429","name":"AxiosError","stack":"AxiosError: Request failed with status code 429\n    at settle (webpack-internal:///(app-pages-browser)/./node_modules/axios/lib/core/settle.js:24:12)\n    at XMLHttpRequest.onloadend (webpack-internal:///(app-pages-browser)/./node_modules/axios/lib/adapters/xhr.js:73:66)\n    at Axios.request (webpack-internal:///(app-pages-browser)/./node_modules/axios/lib/core/Axios.js:59:41)\n    at async Object.getOrders (webpack-internal:///(app-pages-browser)/./lib/api/orders.ts:15:26)\n    at async fetchOrders (webpack-internal:///(app-pages-browser)/./app/dashboard/orders/page.tsx:27:30)","status":429}
 [02:20:01.286] Browser ERROR   Fetch orders error: {"code":"ERR_BAD_REQUEST","config":{"adapter":["xhr","http","fetch"],"allowAbsoluteUrls":true,"baseURL":"http://localhost:5000/api","env":{},"headers":{"Accept":"application/json, text/plain, */*","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJmaXJzdEBleGFtcGxlLmNvbSIsInR5cGUiOiJjdXN0b21lciIsImlhdCI6MTc3NjAxMDk5OCwiZXhwIjoxNzc2NjE1Nzk4fQ.31O39BOMGoII3pxo8Lg8NVAt5uBITBnbOpI0WTk3eBE","Content-Type":"application/json"},"maxBodyLength":-1,"maxContentLength":-1,"method":"get","timeout":0,"transformRequest":[null],"transformResponse":[null],"transitional":{"clarifyTimeoutError":false,"forcedJSONParsing":true,"legacyInterceptorReqResOrdering":true,"silentJSONParsing":true},"url":"/user/orders","xsrfCookieName":"XSRF-TOKEN","xsrfHeaderName":"X-XSRF-TOKEN"},"message":"Request failed with status code 429","name":"AxiosError","stack":"AxiosError: Request failed with status code 429\n    at settle (webpack-internal:///(app-pages-browser)/./node_modules/axios/lib/core/settle.js:24:12)\n    at XMLHttpRequest.onloadend (webpack-internal:///(app-pages-browser)/./node_modules/axios/lib/adapters/xhr.js:73:66)\n    at Axios.request (webpack-internal:///(app-pages-browser)/./node_modules/axios/lib/core/Axios.js:59:41)\n    at async Object.getOrders (webpack-internal:///(app-pages-browser)/./lib/api/orders.ts:15:26)\n    at async fetchOrders (webpack-internal:///(app-pages-browser)/./app/dashboard/orders/page.tsx:27:30)","status":429}
 [02:23:00.474] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[03:27:59.935] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:19:01.281] Server  LOG       Reload env: .env
+[04:19:02.945] Server  LOG       Reload env: .env
+[04:19:08.362] Server  LOG       Reload env: .env
+[04:19:30.429] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[04:19:30.431] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[04:19:30.485] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[04:19:41.572] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:29:45.273] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[04:29:45.273] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[04:30:01.963] Server  ERROR   ⨯ ./app/admin/(dashboard)/customers/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/page.tsx:108:1]
+ 105 │       </div>
+ 106 │     </div>
+ 107 │   );
+ 108 │ }
+     · ▲
+     ╰────
+  × Expected '</', got '<eof>'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/page.tsx:108:3]
+ 106 │     </div>
+ 107 │   );
+ 108 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/page.tsx
+[04:30:03.024] Browser ERROR   ./app/admin/(dashboard)/customers/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/page.tsx:108:1]
+ 105 │       </div>
+ 106 │     </div>
+ 107 │   );
+ 108 │ }
+     · ▲
+     ╰────
+  × Expected '</', got '<eof>'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/page.tsx:108:3]
+ 106 │     </div>
+ 107 │   );
+ 108 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/page.tsx
+[04:30:03.024] Browser ERROR   ./app/admin/(dashboard)/customers/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/page.tsx:108:1]
+ 105 │       </div>
+ 106 │     </div>
+ 107 │   );
+ 108 │ }
+     · ▲
+     ╰────
+  × Expected '</', got '<eof>'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/page.tsx:108:3]
+ 106 │     </div>
+ 107 │   );
+ 108 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/page.tsx
+[04:30:03.024] Browser ERROR   ./app/admin/(dashboard)/customers/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/page.tsx:108:1]
+ 105 │       </div>
+ 106 │     </div>
+ 107 │   );
+ 108 │ }
+     · ▲
+     ╰────
+  × Expected '</', got '<eof>'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/page.tsx:108:3]
+ 106 │     </div>
+ 107 │   );
+ 108 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/page.tsx
+[04:30:06.007] Browser ERROR   ./app/admin/(dashboard)/blog/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:117:1]
+ 114 │             </tbody>
+ 115 │           </table>
+ 116 │         </div>
+ 117 │       )}
+     ·        ▲
+ 118 │     </div>
+ 119 │   );
+ 120 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:119:1]
+ 116 │         </div>
+ 117 │       )}
+ 118 │     </div>
+ 119 │   );
+     ·    ─
+ 120 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/blog/page.tsx
+[04:30:06.007] Browser ERROR   ./app/admin/(dashboard)/blog/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:117:1]
+ 114 │             </tbody>
+ 115 │           </table>
+ 116 │         </div>
+ 117 │       )}
+     ·        ▲
+ 118 │     </div>
+ 119 │   );
+ 120 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:119:1]
+ 116 │         </div>
+ 117 │       )}
+ 118 │     </div>
+ 119 │   );
+     ·    ─
+ 120 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/blog/page.tsx
+[04:30:06.007] Browser ERROR   ./app/admin/(dashboard)/blog/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:117:1]
+ 114 │             </tbody>
+ 115 │           </table>
+ 116 │         </div>
+ 117 │       )}
+     ·        ▲
+ 118 │     </div>
+ 119 │   );
+ 120 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:119:1]
+ 116 │         </div>
+ 117 │       )}
+ 118 │     </div>
+ 119 │   );
+     ·    ─
+ 120 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/blog/page.tsx
+[04:30:06.010] Browser ERROR   ./app/admin/(dashboard)/blog/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:117:1]
+ 114 │             </tbody>
+ 115 │           </table>
+ 116 │         </div>
+ 117 │       )}
+     ·        ▲
+ 118 │     </div>
+ 119 │   );
+ 120 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:119:1]
+ 116 │         </div>
+ 117 │       )}
+ 118 │     </div>
+ 119 │   );
+     ·    ─
+ 120 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/blog/page.tsx
+[04:30:06.011] Browser ERROR   ./app/admin/(dashboard)/blog/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:117:1]
+ 114 │             </tbody>
+ 115 │           </table>
+ 116 │         </div>
+ 117 │       )}
+     ·        ▲
+ 118 │     </div>
+ 119 │   );
+ 120 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:119:1]
+ 116 │         </div>
+ 117 │       )}
+ 118 │     </div>
+ 119 │   );
+     ·    ─
+ 120 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/blog/page.tsx
+[04:30:06.011] Browser ERROR   ./app/admin/(dashboard)/blog/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:117:1]
+ 114 │             </tbody>
+ 115 │           </table>
+ 116 │         </div>
+ 117 │       )}
+     ·        ▲
+ 118 │     </div>
+ 119 │   );
+ 120 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:119:1]
+ 116 │         </div>
+ 117 │       )}
+ 118 │     </div>
+ 119 │   );
+     ·    ─
+ 120 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/blog/page.tsx
+[04:30:06.011] Browser ERROR   ./app/admin/(dashboard)/blog/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:117:1]
+ 114 │             </tbody>
+ 115 │           </table>
+ 116 │         </div>
+ 117 │       )}
+     ·        ▲
+ 118 │     </div>
+ 119 │   );
+ 120 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:119:1]
+ 116 │         </div>
+ 117 │       )}
+ 118 │     </div>
+ 119 │   );
+     ·    ─
+ 120 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/blog/page.tsx
+[04:30:06.011] Browser ERROR   ./app/admin/(dashboard)/blog/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:117:1]
+ 114 │             </tbody>
+ 115 │           </table>
+ 116 │         </div>
+ 117 │       )}
+     ·        ▲
+ 118 │     </div>
+ 119 │   );
+ 120 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:119:1]
+ 116 │         </div>
+ 117 │       )}
+ 118 │     </div>
+ 119 │   );
+     ·    ─
+ 120 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/blog/page.tsx
+[04:30:06.011] Browser ERROR   ./app/admin/(dashboard)/blog/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:117:1]
+ 114 │             </tbody>
+ 115 │           </table>
+ 116 │         </div>
+ 117 │       )}
+     ·        ▲
+ 118 │     </div>
+ 119 │   );
+ 120 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/blog/page.tsx:119:1]
+ 116 │         </div>
+ 117 │       )}
+ 118 │     </div>
+ 119 │   );
+     ·    ─
+ 120 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/blog/page.tsx
+[04:30:09.232] Server  ERROR   ⨯ ./app/admin/(dashboard)/promo-codes/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/promo-codes/page.tsx:162:1]
+ 159 │       </div>
+ 160 │     </div>
+ 161 │   );
+ 162 │ }
+     · ▲
+     ╰────
+  × Expected '</', got '<eof>'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/promo-codes/page.tsx:162:3]
+ 160 │     </div>
+ 161 │   );
+ 162 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/promo-codes/page.tsx
+[04:30:09.969] Browser ERROR   ./app/admin/(dashboard)/promo-codes/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/promo-codes/page.tsx:162:1]
+ 159 │       </div>
+ 160 │     </div>
+ 161 │   );
+ 162 │ }
+     · ▲
+     ╰────
+  × Expected '</', got '<eof>'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/promo-codes/page.tsx:162:3]
+ 160 │     </div>
+ 161 │   );
+ 162 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/promo-codes/page.tsx
+[04:30:09.970] Browser ERROR   ./app/admin/(dashboard)/promo-codes/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/promo-codes/page.tsx:162:1]
+ 159 │       </div>
+ 160 │     </div>
+ 161 │   );
+ 162 │ }
+     · ▲
+     ╰────
+  × Expected '</', got '<eof>'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/promo-codes/page.tsx:162:3]
+ 160 │     </div>
+ 161 │   );
+ 162 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/promo-codes/page.tsx
+[04:30:09.970] Browser ERROR   ./app/admin/(dashboard)/promo-codes/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/promo-codes/page.tsx:162:1]
+ 159 │       </div>
+ 160 │     </div>
+ 161 │   );
+ 162 │ }
+     · ▲
+     ╰────
+  × Expected '</', got '<eof>'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/promo-codes/page.tsx:162:3]
+ 160 │     </div>
+ 161 │   );
+ 162 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/promo-codes/page.tsx
+[04:30:52.773] Server  ERROR   ⨯ ./app/admin/(dashboard)/customers/[id]/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:169:1]
+ 166 │             </tbody>
+ 167 │           </table>
+ 168 │         </div>
+ 169 │       )}
+     ·        ▲
+ 170 │ 
+ 171 │       {/* Cart Tab */}
+ 172 │       {tab === "cart" && (
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:203:1]
+ 200 │         </div>
+ 201 │       )}
+ 202 │     </div>
+ 203 │   );
+     ·    ─
+ 204 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/[id]/page.tsx
+[04:30:53.409] Browser ERROR   ./app/admin/(dashboard)/customers/[id]/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:169:1]
+ 166 │             </tbody>
+ 167 │           </table>
+ 168 │         </div>
+ 169 │       )}
+     ·        ▲
+ 170 │ 
+ 171 │       {/* Cart Tab */}
+ 172 │       {tab === "cart" && (
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:203:1]
+ 200 │         </div>
+ 201 │       )}
+ 202 │     </div>
+ 203 │   );
+     ·    ─
+ 204 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/[id]/page.tsx
+[04:30:53.409] Browser ERROR   ./app/admin/(dashboard)/customers/[id]/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:169:1]
+ 166 │             </tbody>
+ 167 │           </table>
+ 168 │         </div>
+ 169 │       )}
+     ·        ▲
+ 170 │ 
+ 171 │       {/* Cart Tab */}
+ 172 │       {tab === "cart" && (
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:203:1]
+ 200 │         </div>
+ 201 │       )}
+ 202 │     </div>
+ 203 │   );
+     ·    ─
+ 204 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/[id]/page.tsx
+[04:30:53.409] Browser ERROR   ./app/admin/(dashboard)/customers/[id]/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:169:1]
+ 166 │             </tbody>
+ 167 │           </table>
+ 168 │         </div>
+ 169 │       )}
+     ·        ▲
+ 170 │ 
+ 171 │       {/* Cart Tab */}
+ 172 │       {tab === "cart" && (
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:203:1]
+ 200 │         </div>
+ 201 │       )}
+ 202 │     </div>
+ 203 │   );
+     ·    ─
+ 204 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/[id]/page.tsx
+[04:30:53.666] Server  ERROR   ⨯ ./app/admin/(dashboard)/customers/[id]/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:203:1]
+ 200 │             </tbody>
+ 201 │           </table>
+ 202 │         </div>
+ 203 │       )}
+     ·        ▲
+ 204 │     </div>
+ 205 │   );
+ 206 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:205:1]
+ 202 │         </div>
+ 203 │       )}
+ 204 │     </div>
+ 205 │   );
+     ·    ─
+ 206 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/[id]/page.tsx
+[04:30:54.398] Browser ERROR   ./app/admin/(dashboard)/customers/[id]/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:203:1]
+ 200 │             </tbody>
+ 201 │           </table>
+ 202 │         </div>
+ 203 │       )}
+     ·        ▲
+ 204 │     </div>
+ 205 │   );
+ 206 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:205:1]
+ 202 │         </div>
+ 203 │       )}
+ 204 │     </div>
+ 205 │   );
+     ·    ─
+ 206 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/[id]/page.tsx
+[04:30:54.398] Browser ERROR   ./app/admin/(dashboard)/customers/[id]/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:203:1]
+ 200 │             </tbody>
+ 201 │           </table>
+ 202 │         </div>
+ 203 │       )}
+     ·        ▲
+ 204 │     </div>
+ 205 │   );
+ 206 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:205:1]
+ 202 │         </div>
+ 203 │       )}
+ 204 │     </div>
+ 205 │   );
+     ·    ─
+ 206 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/[id]/page.tsx
+[04:30:54.400] Browser ERROR   ./app/admin/(dashboard)/customers/[id]/page.tsx
+Error:   × Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:203:1]
+ 200 │             </tbody>
+ 201 │           </table>
+ 202 │         </div>
+ 203 │       )}
+     ·        ▲
+ 204 │     </div>
+ 205 │   );
+ 206 │ }
+     ╰────
+  × Expected '</', got ';'
+     ╭─[/home/aremzy03/Document/cursor_projects/meenarh/meenarh-web/app/admin/(dashboard)/customers/[id]/page.tsx:205:1]
+ 202 │         </div>
+ 203 │       )}
+ 204 │     </div>
+ 205 │   );
+     ·    ─
+ 206 │ }
+     ╰────
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/admin/(dashboard)/customers/[id]/page.tsx
+[04:31:50.654] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:31:53.861] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[04:31:53.861] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[04:32:39.531] Server  LOG     ○ Compiling /_not-found ...
+[04:32:48.882] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[04:32:48.882] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[04:33:50.711] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[04:33:50.711] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[04:33:52.722] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+[04:33:52.722] Browser WARN    The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.

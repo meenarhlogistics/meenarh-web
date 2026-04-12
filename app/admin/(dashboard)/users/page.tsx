@@ -75,8 +75,8 @@ export default function CreateAdminUserPage() {
   if (!isAdmin) {
     return (
       <div className="max-w-lg space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">Create Admin User</h1>
-        <div className="bg-card border border-border rounded-xl p-8 text-center">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Create Admin User</h1>
+        <div className="bg-card border border-border rounded-xl p-6 sm:p-8 text-center">
           <p className="text-muted-foreground">
             Only users with the <span className="font-medium text-foreground">admin</span> role can create new admin or staff accounts.
           </p>
@@ -88,7 +88,7 @@ export default function CreateAdminUserPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Create Admin User</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Create Admin User</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Add a new admin or staff member to the panel
         </p>
@@ -116,7 +116,7 @@ export default function CreateAdminUserPage() {
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-xl p-6">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Full Name"

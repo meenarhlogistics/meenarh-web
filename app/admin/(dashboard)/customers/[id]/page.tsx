@@ -94,13 +94,13 @@ export default function CustomerDetailPage() {
       </div>
 
       {/* Profile Card */}
-      <div className="bg-card border border-border rounded-xl p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-semibold text-primary">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start gap-4">
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-semibold text-primary shrink-0">
             {customer.name.charAt(0).toUpperCase()}
           </div>
-          <div className="flex-1">
-            <h1 className="text-xl font-semibold text-foreground">{customer.name}</h1>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-semibold text-foreground">{customer.name}</h1>
             <p className="text-muted-foreground text-sm">{customer.email}</p>
             <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3 text-sm">
               <span className="text-muted-foreground">Phone: <span className="text-foreground">{customer.phone || "—"}</span></span>
@@ -114,11 +114,12 @@ export default function CustomerDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <Button
           variant={tab === "orders" ? "primary" : "secondary"}
           size="sm"
           onClick={() => setTab("orders")}
+          className="w-full sm:w-auto"
         >
           Orders ({orders.length})
         </Button>
@@ -126,6 +127,7 @@ export default function CustomerDetailPage() {
           variant={tab === "cart" ? "primary" : "secondary"}
           size="sm"
           onClick={() => setTab("cart")}
+          className="w-full sm:w-auto"
         >
           Cart ({cart.length})
         </Button>
@@ -134,7 +136,8 @@ export default function CustomerDetailPage() {
       {/* Orders Tab */}
       {tab === "orders" && (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="text-left p-4 font-medium text-muted-foreground">Tracking</th>
@@ -162,13 +165,15 @@ export default function CustomerDetailPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
       {/* Cart Tab */}
       {tab === "cart" && (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[560px]">
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="text-left p-4 font-medium text-muted-foreground">Receiver</th>
@@ -194,6 +199,7 @@ export default function CustomerDetailPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

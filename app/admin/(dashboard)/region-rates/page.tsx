@@ -45,7 +45,7 @@ export default function RegionRatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Delivery rates</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Delivery rates</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Pickup hubs, delivery areas, and flat price plus ETA for each pair.
         </p>
@@ -140,7 +140,7 @@ function PickupsPanel() {
     <div className="space-y-6">
       <form
         onSubmit={handleCreate}
-        className="bg-card border border-border rounded-xl p-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end"
+        className="bg-card border border-border rounded-xl p-4 sm:p-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end"
       >
         <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
         <Input label="Slug (optional)" value={slug} onChange={(e) => setSlug(e.target.value)} />
@@ -255,7 +255,7 @@ function DeliveriesPanel() {
     <div className="space-y-6">
       <form
         onSubmit={handleCreate}
-        className="bg-card border border-border rounded-xl p-6 space-y-4"
+        className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-4"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -464,7 +464,7 @@ function RatesPanel() {
       {edit ? (
         <form
           onSubmit={saveEdit}
-          className="bg-card border border-border rounded-xl p-6 space-y-4"
+          className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-4"
         >
           <h2 className="text-lg font-medium text-foreground">
             Edit rate — {edit.delivery_name}
@@ -487,7 +487,7 @@ function RatesPanel() {
       ) : (
         <form
           onSubmit={handleCreateRate}
-          className="bg-card border border-border rounded-xl p-6 space-y-4"
+          className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-4"
         >
           <h2 className="text-lg font-medium text-foreground">Add rate for this hub</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">

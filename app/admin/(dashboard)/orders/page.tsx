@@ -65,7 +65,7 @@ function StatusModal({ order, onClose, onUpdated }: StatusModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-      <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
+      <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Update Order Status</h2>
         <div className="text-sm text-muted-foreground">
           <span className="font-mono text-foreground font-medium">{order.tracking_number}</span>
@@ -100,11 +100,11 @@ function StatusModal({ order, onClose, onUpdated }: StatusModalProps) {
           id="status-note"
         />
 
-        <div className="flex gap-2 justify-end pt-2">
-          <Button variant="secondary" onClick={onClose} disabled={saving}>
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end pt-2">
+          <Button variant="secondary" onClick={onClose} disabled={saving} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSave} disabled={saving || status === order.status}>
+          <Button variant="primary" onClick={handleSave} disabled={saving || status === order.status} className="w-full sm:w-auto">
             {saving ? "Saving..." : "Update Status"}
           </Button>
         </div>
@@ -165,7 +165,7 @@ export default function OrdersPage() {
       )}
 
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Orders</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground">Orders</h1>
         <p className="text-muted-foreground text-sm mt-1">
           {orders.length} total order{orders.length !== 1 ? "s" : ""}
         </p>
