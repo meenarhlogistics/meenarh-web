@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { adminApi } from "@/lib/api/admin";
-import { Button, Input, Badge } from "@/components/ui";
+import { Button, Input, Badge, Toggle } from "@/components/ui";
+import { Pencil, Trash2 } from "lucide-react";
 
 type Tab = "pickups" | "deliveries" | "rates";
 
@@ -179,12 +180,21 @@ function PickupsPanel() {
                     {bool(r.is_active) ? "Yes" : "No"}
                   </Badge>
                 </td>
-                <td className="p-3 flex flex-wrap gap-2">
-                  <Button type="button" size="sm" variant="secondary" onClick={() => toggle(r)}>
-                    Toggle
-                  </Button>
-                  <Button type="button" size="sm" variant="secondary" onClick={() => remove(r.id)}>
-                    Delete
+                <td className="p-3 flex items-center gap-2 flex-nowrap">
+                  <Toggle
+                    checked={bool(r.is_active)}
+                    onChange={() => toggle(r)}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => remove(r.id)}
+                    className="px-3"
+                    aria-label="Delete pickup area"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </td>
               </tr>
@@ -300,12 +310,21 @@ function DeliveriesPanel() {
                     {bool(r.is_active) ? "Yes" : "No"}
                   </Badge>
                 </td>
-                <td className="p-3 flex flex-wrap gap-2">
-                  <Button type="button" size="sm" variant="secondary" onClick={() => toggle(r)}>
-                    Toggle
-                  </Button>
-                  <Button type="button" size="sm" variant="secondary" onClick={() => remove(r.id)}>
-                    Delete
+                <td className="p-3 flex items-center gap-2 flex-nowrap">
+                  <Toggle
+                    checked={bool(r.is_active)}
+                    onChange={() => toggle(r)}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => remove(r.id)}
+                    className="px-3"
+                    aria-label="Delete delivery area"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </td>
               </tr>
@@ -550,15 +569,32 @@ function RatesPanel() {
                       {bool(r.is_active) ? "Yes" : "No"}
                     </Badge>
                   </td>
-                  <td className="p-3 flex flex-wrap gap-2">
-                    <Button type="button" size="sm" variant="secondary" onClick={() => startEdit(r)}>
-                      Edit
+                  <td className="p-3 flex items-center gap-2 flex-nowrap">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => startEdit(r)}
+                      className="px-3"
+                      aria-label="Edit rate"
+                      title="Edit"
+                    >
+                      <Pencil className="w-4 h-4" />
                     </Button>
-                    <Button type="button" size="sm" variant="secondary" onClick={() => toggleRate(r)}>
-                      Toggle
-                    </Button>
-                    <Button type="button" size="sm" variant="secondary" onClick={() => removeRate(r.id)}>
-                      Delete
+                    <Toggle
+                      checked={bool(r.is_active)}
+                      onChange={() => toggleRate(r)}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => removeRate(r.id)}
+                      className="px-3"
+                      aria-label="Delete rate"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </td>
                 </tr>

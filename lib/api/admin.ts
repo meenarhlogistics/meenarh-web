@@ -1,15 +1,28 @@
 import axios from "axios";
 
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const prefix = `${encodeURIComponent(name)}=`;
+  return document.cookie
+    .split(";")
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(prefix))
+    ?.slice(prefix.length) ?? null;
+}
+
 const adminClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
 adminClient.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("meenarh_admin_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  const method = (config.method || "get").toLowerCase();
+  const unsafe = ["post", "put", "patch", "delete"].includes(method);
+  if (unsafe) {
+    const csrf = getCookie("csrf_token");
+    if (csrf) {
+      config.headers["X-CSRF-Token"] = decodeURIComponent(csrf);
     }
   }
   return config;
@@ -19,8 +32,6 @@ adminClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("meenarh_admin_token");
-      localStorage.removeItem("meenarh_admin_user");
       if (typeof window !== "undefined" && !window.location.pathname.includes("/admin/login")) {
         window.location.href = "/admin/login";
       }

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import adminClient from "@/lib/api/admin";
 
 export interface AdminUser {
   id?: number;
@@ -9,45 +10,44 @@ export interface AdminUser {
 
 interface AdminAuthState {
   user: AdminUser | null;
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 
-  setAuth: (token: string, user: AdminUser) => void;
+  setAuth: (user: AdminUser) => void;
   logout: () => void;
-  loadAuth: () => void;
+  loadAuth: () => Promise<void>;
 }
 
 export const useAdminAuthStore = create<AdminAuthState>((set) => ({
   user: null,
-  token: null,
   isAuthenticated: false,
   isLoading: true,
 
-  setAuth: (token: string, user: AdminUser) => {
-    localStorage.setItem("meenarh_admin_token", token);
+  setAuth: (user: AdminUser) => {
     localStorage.setItem("meenarh_admin_user", JSON.stringify(user));
-    set({ token, user, isAuthenticated: true, isLoading: false });
+    set({ user, isAuthenticated: true, isLoading: false });
   },
 
   logout: () => {
-    localStorage.removeItem("meenarh_admin_token");
     localStorage.removeItem("meenarh_admin_user");
-    set({ token: null, user: null, isAuthenticated: false, isLoading: false });
+    set({ user: null, isAuthenticated: false, isLoading: false });
   },
 
-  loadAuth: () => {
+  loadAuth: async () => {
     try {
-      const token = localStorage.getItem("meenarh_admin_token");
-      const userString = localStorage.getItem("meenarh_admin_user");
-      if (token && userString) {
-        const user = JSON.parse(userString) as AdminUser;
-        set({ token, user, isAuthenticated: true, isLoading: false });
-      } else {
-        set({ isLoading: false });
+      set({ isLoading: true });
+      const res = await adminClient.get("/admin/me");
+      if (res.data?.success && res.data?.data) {
+        const user = res.data.data as AdminUser;
+        localStorage.setItem("meenarh_admin_user", JSON.stringify(user));
+        set({ user, isAuthenticated: true, isLoading: false });
+        return;
       }
+      localStorage.removeItem("meenarh_admin_user");
+      set({ user: null, isAuthenticated: false, isLoading: false });
     } catch {
-      set({ isLoading: false });
+      localStorage.removeItem("meenarh_admin_user");
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 }));

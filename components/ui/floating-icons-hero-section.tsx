@@ -42,6 +42,12 @@ const Icon = ({
   index: number;
 }) => {
   const ref = React.useRef<HTMLDivElement>(null);
+  const floatDuration = React.useMemo(() => {
+    // Deterministic pseudo-random duration derived from icon id (no Math.random in render)
+    const seed = (iconData.id * 9301 + 49297) % 233280;
+    const t = seed / 233280;
+    return 5 + t * 5;
+  }, [iconData.id]);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -101,7 +107,7 @@ const Icon = ({
           rotate: [0, 5, 0, -5, 0],
         }}
         transition={{
-          duration: 5 + Math.random() * 5,
+          duration: floatDuration,
           repeat: Infinity,
           repeatType: "mirror",
           ease: "easeInOut",

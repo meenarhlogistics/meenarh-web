@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button, Input, Select, Textarea, Card, Toggle } from "@/components/ui";
 import { OrderStepper } from "./OrderStepper";
 import { CartSummary } from "./CartSummary";
@@ -12,6 +13,7 @@ import {
   regionsApi,
   type PickupRegion,
   type DeliveryRegion,
+  type DeliveryRegionArea,
   type RegionQuote,
 } from "@/lib/api/regions";
 
@@ -22,8 +24,10 @@ const STEPS = [
 ];
 
 export function CreateOrderForm() {
+  const searchParams = useSearchParams();
   const user = useAuthStore((state) => state.user);
   const { addItem, items } = useCartStore();
+  const isPhoneVerified = Boolean(user?.is_phone_verified);
   
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<CreateOrderRequest>({
@@ -39,18 +43,29 @@ export function CreateOrderForm() {
     is_fragile: false,
     pickup_region_id: undefined,
     delivery_region_id: undefined,
+    delivery_region_area_id: undefined,
   });
 
   const [pickups, setPickups] = useState<PickupRegion[]>([]);
   const [deliveries, setDeliveries] = useState<DeliveryRegion[]>([]);
+  const [deliveryAreas, setDeliveryAreas] = useState<DeliveryRegionArea[]>([]);
   const [quote, setQuote] = useState<RegionQuote | null>(null);
   const [pickupsLoading, setPickupsLoading] = useState(true);
   const [deliveriesLoading, setDeliveriesLoading] = useState(false);
+  const [deliveryAreasLoading, setDeliveryAreasLoading] = useState(false);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Allow deep-linking into review step (used by cart "Checkout All")
+  useEffect(() => {
+    const step = searchParams.get("step");
+    if (step === "review") {
+      setCurrentStep(2);
+    }
+  }, [searchParams]);
 
   // Auto-fill sender info when user data loads
   useEffect(() => {
@@ -86,6 +101,7 @@ export function CreateOrderForm() {
   useEffect(() => {
     if (!formData.pickup_region_id) {
       setDeliveries([]);
+      setDeliveryAreas([]);
       return;
     }
     let cancelled = false;
@@ -105,6 +121,29 @@ export function CreateOrderForm() {
       cancelled = true;
     };
   }, [formData.pickup_region_id]);
+
+  useEffect(() => {
+    if (!formData.delivery_region_id) {
+      setDeliveryAreas([]);
+      return;
+    }
+    let cancelled = false;
+    setDeliveryAreasLoading(true);
+    regionsApi
+      .getAreasForDelivery(formData.delivery_region_id)
+      .then((data) => {
+        if (!cancelled) setDeliveryAreas(data);
+      })
+      .catch(() => {
+        if (!cancelled) setDeliveryAreas([]);
+      })
+      .finally(() => {
+        if (!cancelled) setDeliveryAreasLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.delivery_region_id]);
 
   useEffect(() => {
     if (!formData.pickup_region_id || !formData.delivery_region_id) {
@@ -157,6 +196,14 @@ export function CreateOrderForm() {
     ...deliveries.map((d) => ({ value: String(d.id), label: d.name })),
   ];
 
+  const deliveryAreaOptions = [
+    {
+      value: "",
+      label: deliveryAreasLoading ? "Loading…" : "Select delivery sub-area (optional)",
+    },
+    ...deliveryAreas.map((a) => ({ value: String(a.id), label: a.name })),
+  ];
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -168,6 +215,7 @@ export function CreateOrderForm() {
         ...prev,
         pickup_region_id: value ? Number(value) : undefined,
         delivery_region_id: undefined,
+        delivery_region_area_id: undefined,
       }));
       setError("");
       setQuoteError("");
@@ -177,9 +225,18 @@ export function CreateOrderForm() {
       setFormData((prev) => ({
         ...prev,
         delivery_region_id: value ? Number(value) : undefined,
+        delivery_region_area_id: undefined,
       }));
       setError("");
       setQuoteError("");
+      return;
+    }
+    if (name === "delivery_region_area_id") {
+      setFormData((prev) => ({
+        ...prev,
+        delivery_region_area_id: value ? Number(value) : undefined,
+      }));
+      setError("");
       return;
     }
     setFormData((prev) => ({
@@ -225,6 +282,7 @@ export function CreateOrderForm() {
         is_fragile: formData.is_fragile,
         pickup_region_id: formData.pickup_region_id,
         delivery_region_id: formData.delivery_region_id,
+        delivery_region_area_id: formData.delivery_region_area_id,
       });
 
       // Reset only receiver, package, and region fields
@@ -239,6 +297,7 @@ export function CreateOrderForm() {
         is_fragile: false,
         pickup_region_id: undefined,
         delivery_region_id: undefined,
+        delivery_region_area_id: undefined,
       }));
     } catch (err) {
       console.error("Add to cart error:", err);
@@ -251,12 +310,53 @@ export function CreateOrderForm() {
     }
   };
 
-  const handleContinueToReview = () => {
-    if (items.length === 0) {
-      setError("Please add at least one item to your cart");
+  const handleContinueToReview = async () => {
+    setError("");
+
+    // If cart already has items, proceed.
+    if (items.length > 0) {
+      setCurrentStep(2);
       return;
     }
-    setCurrentStep(2);
+
+    // Otherwise, create a single draft line from the current form and proceed.
+    if (!formData.pickup_region_id || !formData.delivery_region_id) {
+      setError("Select pickup area and delivery area.");
+      return;
+    }
+    if (!quote) {
+      setError(quoteError || "No price available for this route.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await addItem({
+        sender_name: formData.sender_name,
+        sender_phone: formData.sender_phone,
+        pickup_address: formData.pickup_address,
+        receiver_name: formData.receiver_name,
+        receiver_phone: formData.receiver_phone,
+        delivery_address: formData.delivery_address,
+        package_description: formData.package_description,
+        item_value: formData.item_value,
+        quantity: formData.quantity,
+        is_fragile: formData.is_fragile,
+        pickup_region_id: formData.pickup_region_id,
+        delivery_region_id: formData.delivery_region_id,
+        delivery_region_area_id: formData.delivery_region_area_id,
+      });
+      setCurrentStep(2);
+    } catch (err) {
+      console.error("Continue to review error:", err);
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(
+        error.response?.data?.message ||
+          "Failed to proceed to review. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Step 1: Delivery Details Form
@@ -273,6 +373,12 @@ export function CreateOrderForm() {
             Add items to your cart before proceeding to checkout
           </p>
         </div>
+
+        {!isPhoneVerified && (
+          <div className="p-4 rounded-lg border bg-primary/10 border-primary/20 text-sm text-primary">
+            Verify your phone to place orders. You can still add items to your cart, but checkout is disabled until you verify.
+          </div>
+        )}
 
         {error && (
           <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
@@ -419,6 +525,20 @@ export function CreateOrderForm() {
                   }
                 />
               </div>
+              {deliveryAreas.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Select
+                    label="Delivery sub-area (optional)"
+                    name="delivery_region_area_id"
+                    options={deliveryAreaOptions}
+                    value={formData.delivery_region_area_id ?? ""}
+                    onChange={handleChange}
+                    id="delivery_region_area_id"
+                    disabled={deliveryAreasLoading}
+                  />
+                  <div />
+                </div>
+              )}
               {formData.pickup_region_id &&
                 !deliveriesLoading &&
                 deliveries.length === 0 && (
@@ -485,7 +605,7 @@ export function CreateOrderForm() {
               variant="primary"
               size="lg"
               onClick={handleContinueToReview}
-              disabled={items.length === 0}
+              disabled={isLoading || !isPhoneVerified}
             >
               Continue to Review ({items.length})
             </Button>
@@ -526,7 +646,7 @@ export function CreateOrderForm() {
             variant="primary"
             size="lg"
             onClick={() => setCurrentStep(3)}
-            disabled={items.length === 0}
+            disabled={items.length === 0 || !isPhoneVerified}
           >
             Continue to Payment
           </Button>

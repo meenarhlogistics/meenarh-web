@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
     try {
       const response = await adminApi.login(formData.email, formData.password);
       if (response.success) {
-        setAuth(response.data.token, response.data.user);
+        setAuth(response.data.user);
         router.push("/admin");
       } else {
         setError(response.message || "Login failed");

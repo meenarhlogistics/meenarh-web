@@ -26,7 +26,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   addItem: async (item) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await cartApi.addToCart(item);
+      await cartApi.addToCart(item);
       
       // Fetch updated cart
       await get().fetchCart();

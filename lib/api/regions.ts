@@ -14,6 +14,11 @@ export interface DeliveryRegion {
   sort_order: number;
 }
 
+export interface DeliveryRegionArea {
+  id: number;
+  name: string;
+}
+
 export interface RegionQuote {
   price_ngn: number;
   eta_min_hours: number;
@@ -36,6 +41,14 @@ export const regionsApi = {
     const res = await apiClient.get<{ success: boolean; data: DeliveryRegion[] }>(
       "/regions/deliveries",
       { params: { pickup_region_id: pickupRegionId } }
+    );
+    return res.data.data ?? [];
+  },
+
+  async getAreasForDelivery(deliveryRegionId: number): Promise<DeliveryRegionArea[]> {
+    const res = await apiClient.get<{ success: boolean; data: DeliveryRegionArea[] }>(
+      "/regions/delivery-areas",
+      { params: { delivery_region_id: deliveryRegionId } }
     );
     return res.data.data ?? [];
   },

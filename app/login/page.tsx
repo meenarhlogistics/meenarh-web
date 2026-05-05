@@ -37,7 +37,7 @@ export default function LoginPage() {
       
       if (response.success) {
         // Store auth data
-        setAuth(response.data.token, response.data.user);
+        setAuth(response.data.user);
         
         // Redirect to dashboard
         router.push("/dashboard");

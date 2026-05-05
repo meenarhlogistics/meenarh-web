@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
@@ -14,7 +14,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, isLoading, loadAuth } = useAuthStore();
+  const pathname = usePathname();
+  const { isAuthenticated, isLoading, loadAuth, user } = useAuthStore();
   const { fetchCart } = useCartStore();
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
@@ -36,6 +37,13 @@ export default function DashboardLayout({
       router.push("/login");
     }
   }, [isAuthenticated, isLoading, router]);
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+    if (user?.is_phone_verified) return;
+    if (pathname === "/dashboard/verify-phone") return;
+    router.replace("/dashboard/verify-phone");
+  }, [isAuthenticated, isLoading, pathname, router, user?.is_phone_verified]);
 
   // Show loading state while checking auth
   if (isLoading) {

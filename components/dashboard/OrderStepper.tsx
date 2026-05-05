@@ -30,7 +30,6 @@ export function OrderStepper({ currentStep, steps }: OrderStepperProps) {
           const stepNumber = index + 1;
           const isCompleted = stepNumber < currentStep;
           const isCurrent = stepNumber === currentStep;
-          const isPending = stepNumber > currentStep;
 
           return (
             <div

@@ -3,12 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Button, Input } from "@/components/ui";
 import apiClient from "@/lib/api/client";
 
 export default function ForgotPasswordPage() {
-  const router = useRouter();
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");

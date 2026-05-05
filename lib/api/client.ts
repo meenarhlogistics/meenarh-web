@@ -1,29 +1,35 @@
 import axios from "axios";
 
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const prefix = `${encodeURIComponent(name)}=`;
+  return document.cookie
+    .split(";")
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(prefix))
+    ?.slice(prefix.length) ?? null;
+}
+
 // Create axios instance with base configuration
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
-// Request interceptor to attach JWT token
-apiClient.interceptors.request.use(
-  (config) => {
-    // Get token from localStorage
-    const token = localStorage.getItem("meenarh_token");
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+apiClient.interceptors.request.use((config) => {
+  const method = (config.method || "get").toLowerCase();
+  const unsafe = ["post", "put", "patch", "delete"].includes(method);
+  if (unsafe) {
+    const csrf = getCookie("csrf_token");
+    if (csrf) {
+      config.headers["X-CSRF-Token"] = decodeURIComponent(csrf);
     }
-    
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
   }
-);
+  return config;
+});
 
 // Response interceptor to handle errors
 apiClient.interceptors.response.use(
@@ -33,10 +39,6 @@ apiClient.interceptors.response.use(
   (error) => {
     // Handle 401 Unauthorized errors
     if (error.response?.status === 401) {
-      // Clear token from localStorage
-      localStorage.removeItem("meenarh_token");
-      localStorage.removeItem("meenarh_user");
-      
       // Redirect to login if not already there
       if (typeof window !== "undefined" && window.location.pathname !== "/login") {
         window.location.href = "/login";

@@ -137,8 +137,8 @@ export default function AdminDashboardPage() {
 
       {/* Location Tables */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <LocationTable title="Most Requested Pickup Locations" data={pickupLocations} />
-        <LocationTable title="Most Requested Delivery Locations" data={deliveryLocations} />
+        <LocationTable title="Most Requested Pickup Areas" data={pickupLocations} />
+        <LocationTable title="Most Requested Delivery Areas" data={deliveryLocations} />
       </div>
     </div>
   );

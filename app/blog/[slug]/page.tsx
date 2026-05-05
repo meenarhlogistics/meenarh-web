@@ -5,6 +5,8 @@ import { Navigation, Footer } from "@/components/layout";
 import { SITE_CONFIG, NAV_LINKS } from "@/lib/constants";
 import { blogApi } from "@/lib/api/blog";
 import { Calendar, User, ArrowLeft } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-NG", {
@@ -105,8 +107,11 @@ export default async function BlogPostPage({
               prose-ul:text-foreground/80 prose-ol:text-foreground/80
               prose-strong:text-foreground
               prose-blockquote:border-l-foreground/30 prose-blockquote:text-muted-foreground"
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
+          >
+            <ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml>
+              {post.content}
+            </ReactMarkdown>
+          </article>
 
           {/* Footer back link */}
           <div className="mt-14 pt-8 border-t border-border">

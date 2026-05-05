@@ -1,34 +1,30 @@
 import { create } from "zustand";
 import type { User } from "@/types";
+import apiClient from "@/lib/api/client";
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   
   // Actions
-  setAuth: (token: string, user: User) => void;
+  setAuth: (user: User) => void;
   logout: () => void;
-  loadAuth: () => void;
+  loadAuth: () => Promise<void>;
   setUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  token: null,
   isAuthenticated: false,
   isLoading: true,
 
   // Set authentication data
-  setAuth: (token: string, user: User) => {
-    // Store in localStorage
-    localStorage.setItem("meenarh_token", token);
+  setAuth: (user: User) => {
     localStorage.setItem("meenarh_user", JSON.stringify(user));
     
     // Update state
     set({
-      token,
       user,
       isAuthenticated: true,
       isLoading: false,
@@ -38,12 +34,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   // Logout user
   logout: () => {
     // Clear localStorage
-    localStorage.removeItem("meenarh_token");
     localStorage.removeItem("meenarh_user");
     
     // Clear state
     set({
-      token: null,
       user: null,
       isAuthenticated: false,
       isLoading: false,
@@ -51,25 +45,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   // Load auth from localStorage on app startup
-  loadAuth: () => {
+  loadAuth: async () => {
     try {
-      const token = localStorage.getItem("meenarh_token");
-      const userString = localStorage.getItem("meenarh_user");
-      
-      if (token && userString) {
-        const user = JSON.parse(userString) as User;
-        set({
-          token,
-          user,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-      } else {
-        set({ isLoading: false });
+      set({ isLoading: true });
+      const res = await apiClient.get("/user/me");
+      if (res.data?.success && res.data?.data) {
+        const user = res.data.data as User;
+        localStorage.setItem("meenarh_user", JSON.stringify(user));
+        set({ user, isAuthenticated: true, isLoading: false });
+        return;
       }
-    } catch (error) {
-      console.error("Failed to load auth from localStorage:", error);
-      set({ isLoading: false });
+      localStorage.removeItem("meenarh_user");
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    } catch {
+      localStorage.removeItem("meenarh_user");
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 

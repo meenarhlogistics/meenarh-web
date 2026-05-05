@@ -5,6 +5,7 @@ export interface User {
   email: string;
   phone?: string;
   default_address?: string;
+  is_phone_verified?: boolean;
 }
 
 // Order types
@@ -22,6 +23,7 @@ export interface Order {
   price: number | null;
   pickup_region_id?: number | null;
   delivery_region_id?: number | null;
+  delivery_region_area_id?: number | null;
   eta_min_hours?: number | null;
   eta_max_hours?: number | null;
   eta_label?: string | null;
@@ -75,6 +77,7 @@ export interface CreateOrderRequest {
   distance_km?: number;
   pickup_region_id?: number;
   delivery_region_id?: number;
+  delivery_region_area_id?: number;
 }
 
 // Cart types
@@ -95,6 +98,7 @@ export interface CartItem {
   distance_km?: number | null;
   pickup_region_id?: number | null;
   delivery_region_id?: number | null;
+  delivery_region_area_id?: number | null;
   eta_min_hours?: number | null;
   eta_max_hours?: number | null;
   eta_label?: string | null;
@@ -108,7 +112,6 @@ export interface AuthResponse {
   success: boolean;
   message: string;
   data: {
-    token: string;
     user: User;
   };
 }

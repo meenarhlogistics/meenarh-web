@@ -31,8 +31,8 @@ export default function CartPage() {
   };
 
   const handleCheckout = () => {
-    // Navigate to create order form, which will show Step 2 (Review) if cart has items
-    router.push("/dashboard");
+    // Navigate to review flow (dashboard step 2)
+    router.push("/dashboard?step=review");
   };
 
   if (isLoading) {

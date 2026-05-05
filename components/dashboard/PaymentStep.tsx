@@ -4,8 +4,10 @@ import React, { useState } from "react";
 import { Button, Card, Input } from "@/components/ui";
 import { OrderStepper } from "./OrderStepper";
 import { useCartStore } from "@/lib/store/cartStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import apiClient from "@/lib/api/client";
 import { paymentsApi } from "@/lib/api/payments";
+import { useRouter } from "next/navigation";
 
 interface PaymentStepProps {
   onBack: () => void;
@@ -18,7 +20,9 @@ const STEPS = [
 ];
 
 export function PaymentStep({ onBack }: PaymentStepProps) {
+  const router = useRouter();
   const { getTotalPrice, getItemCount } = useCartStore();
+  const user = useAuthStore((s) => s.user);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
 
@@ -61,6 +65,10 @@ export function PaymentStep({ onBack }: PaymentStepProps) {
 
   const handleCheckout = async () => {
     setError("");
+    if (!user?.is_phone_verified) {
+      router.push("/dashboard/verify-phone");
+      return;
+    }
     setIsProcessing(true);
 
     try {

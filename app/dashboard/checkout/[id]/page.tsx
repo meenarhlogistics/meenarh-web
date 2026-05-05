@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Button, Card } from "@/components/ui";
+import { Button, Card, Input } from "@/components/ui";
 import { useCartStore } from "@/lib/store/cartStore";
+import { useAuthStore } from "@/lib/store/authStore";
+import apiClient from "@/lib/api/client";
 import { paymentsApi } from "@/lib/api/payments";
 
 export default function SingleItemCheckoutPage() {
@@ -11,17 +13,55 @@ export default function SingleItemCheckoutPage() {
   const params = useParams();
   const itemId = Number(params.id);
   const { items, fetchCart } = useCartStore();
+  const user = useAuthStore((s) => s.user);
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
 
+  const [promoCode, setPromoCode] = useState("");
+  const [promoValidating, setPromoValidating] = useState(false);
+  const [promoResult, setPromoResult] = useState<{
+    valid: boolean;
+    message?: string;
+    discount?: number;
+    new_total?: number;
+  } | null>(null);
+
   const selectedItem = items.find((item) => item.id === itemId);
+  const baseAmount = Number(selectedItem?.estimated_price) || 0;
+  const finalAmount = promoResult?.valid ? (promoResult.new_total ?? baseAmount) : baseAmount;
 
   useEffect(() => {
     if (items.length === 0) {
       fetchCart();
     }
   }, [items.length, fetchCart]);
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoValidating(true);
+    setPromoResult(null);
+    try {
+      const res = await apiClient.post("/promo-codes/validate", {
+        code: promoCode.trim(),
+        order_total: baseAmount,
+      });
+      setPromoResult(res.data.data);
+    } catch (err) {
+      const e = err as { response?: { data?: { data?: { message?: string } } } };
+      setPromoResult({
+        valid: false,
+        message: e.response?.data?.data?.message || "Invalid promo code",
+      });
+    } finally {
+      setPromoValidating(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoCode("");
+    setPromoResult(null);
+  };
 
   const handleCheckout = async () => {
     if (!selectedItem) {
@@ -30,12 +70,17 @@ export default function SingleItemCheckoutPage() {
     }
 
     setError("");
+    if (!user?.is_phone_verified) {
+      router.push("/dashboard/verify-phone");
+      return;
+    }
     setIsProcessing(true);
 
     try {
       const init = await paymentsApi.initializePaystack({
         scope: "single_item",
         cart_item_id: itemId,
+        promo_code: promoResult?.valid ? promoCode.trim().toUpperCase() : undefined,
       });
       const url = init.data?.authorization_url;
       if (!url) {
@@ -109,6 +154,51 @@ export default function SingleItemCheckoutPage() {
         </div>
       )}
 
+      {/* Promo Code */}
+      <Card className="p-4 sm:p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
+          Promo Code
+        </h2>
+        {promoResult?.valid ? (
+          <div className="flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg">
+            <div>
+              <p className="text-sm font-medium text-primary">
+                Code &quot;{promoCode}&quot; applied — ₦{(promoResult.discount ?? 0).toFixed(2)} off
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleRemovePromo}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              Remove
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Input
+              placeholder="Enter promo code"
+              value={promoCode}
+              onChange={(e) => {
+                setPromoCode(e.target.value);
+                setPromoResult(null);
+              }}
+              id="promo-code-input"
+            />
+            <Button
+              variant="secondary"
+              onClick={handleApplyPromo}
+              disabled={promoValidating || !promoCode.trim()}
+            >
+              {promoValidating ? "..." : "Apply"}
+            </Button>
+          </div>
+        )}
+        {promoResult && !promoResult.valid && (
+          <p className="text-destructive text-sm mt-2">{promoResult.message}</p>
+        )}
+      </Card>
+
       {/* Item Summary */}
       <Card className="p-4 sm:p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">
@@ -149,7 +239,7 @@ export default function SingleItemCheckoutPage() {
                 Total Amount
               </span>
               <span className="text-xl sm:text-2xl font-bold text-primary">
-                ₦{Number(selectedItem.estimated_price).toFixed(2)}
+                ₦{finalAmount.toFixed(2)}
               </span>
             </div>
           </div>
@@ -183,7 +273,7 @@ export default function SingleItemCheckoutPage() {
           disabled={isProcessing}
           className="w-full sm:w-auto"
         >
-          {isProcessing ? "Redirecting…" : `Pay with Paystack ₦${Number(selectedItem.estimated_price).toFixed(2)}`}
+          {isProcessing ? "Redirecting…" : `Pay with Paystack ₦${finalAmount.toFixed(2)}`}
         </Button>
       </div>
     </div>
