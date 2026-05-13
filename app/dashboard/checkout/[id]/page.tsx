@@ -7,6 +7,7 @@ import { useCartStore } from "@/lib/store/cartStore";
 import { useAuthStore } from "@/lib/store/authStore";
 import apiClient from "@/lib/api/client";
 import { paymentsApi } from "@/lib/api/payments";
+import type { CartItem } from "@/types";
 
 export default function SingleItemCheckoutPage() {
   const router = useRouter();
@@ -27,7 +28,9 @@ export default function SingleItemCheckoutPage() {
     new_total?: number;
   } | null>(null);
 
-  const selectedItem = items.find((item) => item.id === itemId);
+  const selectedItem = items.find(
+    (item): item is CartItem & { kind: "single" } => item.kind === "single" && item.id === itemId
+  );
   const baseAmount = Number(selectedItem?.estimated_price) || 0;
   const finalAmount = promoResult?.valid ? (promoResult.new_total ?? baseAmount) : baseAmount;
 

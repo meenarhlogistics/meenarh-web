@@ -37,14 +37,20 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle 401 Unauthorized errors
-    if (error.response?.status === 401) {
-      // Redirect to login if not already there
-      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+    // Auto-redirect on 401 ONLY when the user is already inside a protected
+    // area (the dashboard). On marketing / public pages, a 401 from an auth
+    // probe (e.g. GET /user/me used by loadAuth) is expected for guests and
+    // must be surfaced to the caller — not turned into a forced redirect.
+    // The dashboard layout has its own auth guard that handles unauthenticated
+    // users gracefully.
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      const path = window.location.pathname;
+      const isProtectedArea = path.startsWith("/dashboard");
+      if (isProtectedArea && path !== "/login") {
         window.location.href = "/login";
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

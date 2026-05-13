@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Card } from "@/components/ui";
-import type { Order } from "@/types";
+import type { BulkOrder, Order, OrderHistoryEntry } from "@/types";
 
 interface OrderCardProps {
-  order: Order;
+  order: Order | BulkOrder | OrderHistoryEntry;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -15,6 +15,8 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function OrderCard({ order }: OrderCardProps) {
+  const isBulkOrder = !("receiver_name" in order);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -64,17 +66,43 @@ export function OrderCard({ order }: OrderCardProps) {
       </div>
 
       <div className="space-y-3 mb-4">
-        <div>
-          <p className="text-sm text-muted-foreground">Receiver</p>
-          <p className="font-medium text-foreground">{order.receiver_name}</p>
-        </div>
-        
-        <div>
-          <p className="text-sm text-muted-foreground">Delivery Address</p>
-          <p className="text-sm text-foreground">{order.delivery_address}</p>
-        </div>
+        {isBulkOrder ? (
+          <>
+            <div>
+              <p className="text-sm text-muted-foreground">Bulk Delivery</p>
+              <p className="font-medium text-foreground">
+                {(order.item_count ?? 0).toLocaleString()}{" "}
+                {(order.item_count ?? 0) === 1 ? "destination" : "destinations"}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-muted-foreground">Default Pickup Address</p>
+              <p className="text-sm text-foreground">{order.pickup_address}</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <p className="text-sm text-muted-foreground">Receiver</p>
+              <p className="font-medium text-foreground">{order.receiver_name}</p>
+            </div>
+
+            <div>
+              <p className="text-sm text-muted-foreground">Delivery Address</p>
+              <p className="text-sm text-foreground">{order.delivery_address}</p>
+            </div>
+          </>
+        )}
         
         <div className="flex flex-wrap gap-4">
+          {isBulkOrder ? (
+            <div>
+              <p className="text-sm text-muted-foreground">Sender</p>
+              <p className="text-sm text-foreground">{order.sender_name}</p>
+            </div>
+          ) : null}
+
           <div>
             <p className="text-sm text-muted-foreground">Price</p>
             <p className="font-semibold text-foreground">

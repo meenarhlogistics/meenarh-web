@@ -10,9 +10,28 @@ import {
   MapPinned,
 } from "lucide-react";
 
-export const adminNavItems: { href: string; label: string; icon: LucideIcon }[] = [
+export type AdminNavChild = {
+  href: string;
+  label: string;
+};
+
+export type AdminNavItem = {
+  href?: string;
+  label: string;
+  icon: LucideIcon;
+  children?: AdminNavChild[];
+};
+
+export const adminNavItems: AdminNavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Orders", icon: Package },
+  {
+    label: "Orders",
+    icon: Package,
+    children: [
+      { href: "/admin/orders", label: "Single Order" },
+      { href: "/admin/bulk-orders", label: "Bulk Order" },
+    ],
+  },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/region-rates", label: "Delivery rates", icon: MapPinned },
   { href: "/admin/blog", label: "Blog", icon: FileText },

@@ -2,37 +2,109 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card } from "@/components/ui";
+import { Button, Card, ConfirmationDialog } from "@/components/ui";
 import { CartItem } from "@/components/dashboard/CartItem";
 import { useCartStore } from "@/lib/store/cartStore";
+import type { CartEntry } from "@/types";
+
+interface ConfirmState {
+  open: boolean;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  variant?: "primary" | "danger";
+  onConfirm: () => Promise<void> | void;
+}
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, fetchCart, isLoading, clearCart, getTotalPrice } = useCartStore();
+  const { items, fetchCart, isLoading, clearCart, getTotalPrice, getItemCount, getEntryCount } = useCartStore();
   const [isClearing, setIsClearing] = useState(false);
+  const [isConfirmingAction, setIsConfirmingAction] = useState(false);
+  const [confirmState, setConfirmState] = useState<ConfirmState>({
+    open: false,
+    title: "",
+    description: "",
+    confirmLabel: "Confirm",
+    variant: "primary",
+    onConfirm: () => {},
+  });
   const totalPrice = Number(getTotalPrice()) || 0;
+  const deliveryCount = getItemCount();
+  const entryCount = getEntryCount();
 
   useEffect(() => {
     // Fetch cart items from backend
     fetchCart();
   }, [fetchCart]);
 
-  const handleClearCart = async () => {
-    if (window.confirm("Are you sure you want to clear your entire cart?")) {
-      setIsClearing(true);
-      try {
-        await clearCart();
-      } catch (error) {
-        console.error("Failed to clear cart:", error);
-      } finally {
-        setIsClearing(false);
-      }
+  const closeConfirmation = () => {
+    if (isConfirmingAction) return;
+    setConfirmState((current) => ({ ...current, open: false }));
+  };
+
+  const handleConfirmAction = async () => {
+    setIsConfirmingAction(true);
+    try {
+      await confirmState.onConfirm();
+      setConfirmState((current) => ({ ...current, open: false }));
+    } finally {
+      setIsConfirmingAction(false);
     }
   };
 
+  const handleClearCart = () => {
+    setConfirmState({
+      open: true,
+      title: "Clear cart?",
+      description: "This will remove every delivery currently in your cart.",
+      confirmLabel: "Clear cart",
+      variant: "danger",
+      onConfirm: async () => {
+        setIsClearing(true);
+        try {
+          await clearCart();
+        } catch (error) {
+          console.error("Failed to clear cart:", error);
+        } finally {
+          setIsClearing(false);
+        }
+      },
+    });
+  };
+
   const handleCheckout = () => {
-    // Navigate to review flow (dashboard step 2)
-    router.push("/dashboard?step=review");
+    setConfirmState({
+      open: true,
+      title: "Proceed to checkout?",
+      description: "You will continue to the shared review flow for every item currently in your cart.",
+      confirmLabel: "Continue",
+      variant: "primary",
+      onConfirm: () => {
+        router.push("/dashboard/create?step=review");
+      },
+    });
+  };
+
+  const handleEntryCheckout = (entry: CartEntry) => {
+    const pathname =
+      entry.kind === "bulk"
+        ? `/dashboard/bulk-checkout/${entry.id}`
+        : `/dashboard/checkout/${entry.id}`;
+
+    setConfirmState({
+      open: true,
+      title: entry.kind === "bulk" ? "Checkout bulk delivery?" : "Checkout this delivery?",
+      description:
+        entry.kind === "bulk"
+          ? "Only this grouped bulk delivery will be sent to payment."
+          : "Only this delivery will be sent to payment.",
+      confirmLabel: "Checkout",
+      variant: "primary",
+      onConfirm: () => {
+        router.push(pathname);
+      },
+    });
   };
 
   if (isLoading) {
@@ -95,7 +167,7 @@ export default function CartPage() {
           <Button
             variant="primary"
             size="lg"
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/dashboard/create")}
           >
             Create Order
           </Button>
@@ -111,7 +183,7 @@ export default function CartPage() {
         <div>
           <h1 className="text-3xl font-semibold text-foreground">Shopping Cart</h1>
           <p className="text-muted-foreground mt-1">
-            {items.length} {items.length === 1 ? "item" : "items"} in your cart
+            {entryCount} {entryCount === 1 ? "entry" : "entries"} in your cart
           </p>
         </div>
         <Button
@@ -128,19 +200,9 @@ export default function CartPage() {
       <div className="space-y-4">
         {items.map((item) => (
           <CartItem 
-            key={item.id} 
+            key={item.kind === "bulk" ? `bulk-${item.id}` : `single-${item.id}`} 
             item={item}
-            onCheckout={async (itemId) => {
-              // Handle individual item checkout
-              if (window.confirm("Checkout this item?")) {
-                try {
-                  // Navigate to payment with single item
-                  router.push(`/dashboard/checkout/${itemId}`);
-                } catch (error) {
-                  console.error("Failed to checkout item:", error);
-                }
-              }
-            }}
+            onCheckout={handleEntryCheckout}
           />
         ))}
       </div>
@@ -155,7 +217,7 @@ export default function CartPage() {
               ₦{totalPrice.toFixed(2)}
             </p>
             <p className="text-xs text-muted-foreground">
-              {items.length} {items.length === 1 ? "delivery" : "deliveries"}
+              {deliveryCount} {deliveryCount === 1 ? "delivery" : "deliveries"}
             </p>
           </div>
           
@@ -164,7 +226,7 @@ export default function CartPage() {
             <Button
               variant="secondary"
               size="md"
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push("/dashboard/create")}
               className="w-full sm:w-auto text-sm"
             >
               Add More Items
@@ -180,6 +242,16 @@ export default function CartPage() {
           </div>
         </div>
       </Card>
+      <ConfirmationDialog
+        open={confirmState.open}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmLabel={confirmState.confirmLabel}
+        variant={confirmState.variant}
+        isConfirming={isConfirmingAction}
+        onConfirm={handleConfirmAction}
+        onCancel={closeConfirmation}
+      />
     </div>
   );
 }

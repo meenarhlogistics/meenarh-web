@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Card } from "@/components/ui";
 
 interface Point {
@@ -10,6 +13,8 @@ interface WhyUsProps {
   title: string;
   points: Point[];
 }
+
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const IconMap: Record<string, React.ReactNode> = {
   tracking: (
@@ -84,30 +89,60 @@ export function WhyUs({ title, points }: WhyUsProps) {
   return (
     <section className="section-padding bg-muted">
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground text-center mb-12">
-          {title}
-        </h2>
+        {/* Title — 3D forward flip using rotateX with perspective */}
+        <div style={{ perspective: "800px" }}>
+          <motion.h2
+            className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground text-center mb-12"
+            initial={{ opacity: 0, rotateX: 35 }}
+            whileInView={{ opacity: 1, rotateX: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, ease: EASE }}
+          >
+            {title}
+          </motion.h2>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {points.map((point, index) => (
-            <Card
-              key={index}
-              className="p-6 flex items-start gap-4 transition-transform transition-shadow duration-200 hover:-translate-y-1 hover:shadow-md"
-            >
-              {/* Icon */}
-              <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center flex-shrink-0 text-primary">
-                {IconMap[point.icon] || IconMap.shield}
-              </div>
+          {points.map((point, index) => {
+            // Odd-indexed cards slide in from the left, even from the right
+            const xStart = index % 2 === 0 ? -60 : 60;
 
-              {/* Content */}
-              <div>
-                <h3 className="text-lg font-semibold text-foreground mb-1">
-                  {point.title}
-                </h3>
-                <p className="text-muted-foreground text-sm">{point.description}</p>
-              </div>
-            </Card>
-          ))}
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: xStart }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6, delay: index * 0.1, ease: EASE }}
+              >
+                <Card className="p-6 flex items-start gap-4 transition-transform transition-shadow duration-200 hover:-translate-y-1 hover:shadow-md">
+                  {/* Icon — spins 180deg into position */}
+                  <motion.div
+                    className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center flex-shrink-0 text-primary"
+                    initial={{ rotate: 180, opacity: 0 }}
+                    whileInView={{ rotate: 0, opacity: 1 }}
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 20,
+                      delay: 0.15 + index * 0.1,
+                    }}
+                  >
+                    {IconMap[point.icon] || IconMap.shield}
+                  </motion.div>
+
+                  {/* Content */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground mb-1">
+                      {point.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm">{point.description}</p>
+                  </div>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -77,11 +77,15 @@ export default function Home() {
           description={CTA_CONTENT.description}
           buttonText={CTA_CONTENT.buttonText}
           helperText={CTA_CONTENT.helperText}
+          primaryHref={CTA_CONTENT.primaryHref}
+          appStoreHref={CTA_CONTENT.appStoreHref}
+          googlePlayHref={CTA_CONTENT.googlePlayHref}
         />
       </main>
 
       {/* 8. Footer */}
       <Footer
+        variant="fullPage"
         companyName={SITE_CONFIG.name}
         tagline={SITE_CONFIG.tagline}
         whatsappLink={SITE_CONFIG.whatsappLink}

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import adminClient from "@/lib/api/admin";
+import adminClient, { adminApi } from "@/lib/api/admin";
 
 export interface AdminUser {
   id?: number;
@@ -14,7 +14,7 @@ interface AdminAuthState {
   isLoading: boolean;
 
   setAuth: (user: AdminUser) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   loadAuth: () => Promise<void>;
 }
 
@@ -28,9 +28,21 @@ export const useAdminAuthStore = create<AdminAuthState>((set) => ({
     set({ user, isAuthenticated: true, isLoading: false });
   },
 
-  logout: () => {
-    localStorage.removeItem("meenarh_admin_user");
-    set({ user: null, isAuthenticated: false, isLoading: false });
+  logout: async () => {
+    try {
+      await adminApi.logout();
+    } catch {
+      // An expired/invalid cookie can 401 here. Still clear local state so the
+      // UI never remains stuck in an authenticated state.
+    } finally {
+      try {
+        localStorage.removeItem("meenarh_admin_user");
+        localStorage.removeItem("meenarh_user");
+      } catch {
+        // localStorage can be unavailable in private mode; logout should still finish.
+      }
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    }
   },
 
   loadAuth: async () => {

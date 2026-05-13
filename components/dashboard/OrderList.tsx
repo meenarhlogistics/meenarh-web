@@ -1,11 +1,17 @@
-import type { Order } from "@/types";
+import type { BulkOrder, Order, OrderHistoryEntry } from "@/types";
 import { OrderCard } from "./OrderCard";
 
 interface OrderListProps {
-  orders: Order[];
+  orders: Array<Order | BulkOrder | OrderHistoryEntry>;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }
 
-export function OrderList({ orders }: OrderListProps) {
+export function OrderList({
+  orders,
+  emptyTitle = "No orders yet",
+  emptyDescription = "Create your first delivery order to get started",
+}: OrderListProps) {
   if (orders.length === 0) {
     return (
       <div className="text-center py-16">
@@ -25,10 +31,10 @@ export function OrderList({ orders }: OrderListProps) {
           </svg>
         </div>
         <h3 className="text-lg font-semibold text-foreground mb-2">
-          No orders yet
+          {emptyTitle}
         </h3>
         <p className="text-muted-foreground mb-6">
-          Create your first delivery order to get started
+          {emptyDescription}
         </p>
       </div>
     );

@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Card } from "@/components/ui";
 import { paymentsApi } from "@/lib/api/payments";
 import { useCartStore } from "@/lib/store/cartStore";
+import type { CheckoutResponse } from "@/types";
+
+type SuccessData = NonNullable<CheckoutResponse["data"]>;
 
 function CallbackContent() {
   const router = useRouter();
@@ -13,11 +16,7 @@ function CallbackContent() {
   const [error, setError] = useState("");
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [success, setSuccess] = useState<{
-    orders: Array<{ tracking_number: string; price: number }>;
-    total_orders: number;
-    total_price: number;
-  } | null>(null);
+  const [success, setSuccess] = useState<SuccessData | null>(null);
 
   useEffect(() => {
     const reference = searchParams.get("reference");
@@ -34,6 +33,7 @@ function CallbackContent() {
         if (cancelled) return;
         if (res.success && res.data) {
           setSuccess(res.data);
+          // fetchCart is a no-op for bulk orders but harmless to call
           await fetchCart();
         } else {
           setError("Verification did not complete successfully.");
@@ -57,9 +57,7 @@ function CallbackContent() {
       }
     })();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [searchParams, fetchCart]);
 
   if (loading) {
@@ -86,7 +84,7 @@ function CallbackContent() {
               </Button>
             ) : (
               <Button variant="secondary" onClick={() => router.push("/dashboard/cart")}>
-                Back to cart
+                Back to checkout
               </Button>
             )}
             <Button variant="primary" onClick={() => router.push("/dashboard")}>
@@ -98,9 +96,22 @@ function CallbackContent() {
     );
   }
 
-  if (!success) {
-    return null;
-  }
+  if (!success) return null;
+
+  const entries =
+    success.entries && success.entries.length > 0
+      ? success.entries
+      : success.orders.map((order) => ({
+          kind: success.checkout_kind === "bulk" ? "bulk" : "single",
+          tracking_number: order.tracking_number,
+          price: order.price,
+          ...(success.bulk_item_count != null ? { bulk_item_count: success.bulk_item_count } : {}),
+        }));
+  const hasBulk = entries.some((entry) => entry.kind === "bulk");
+  const hasSingle = entries.some((entry) => entry.kind === "single");
+  const isMixed = success.checkout_kind === "mixed" || (hasBulk && hasSingle);
+  const isBulkOnly = !isMixed && hasBulk;
+  const deliveryCount = success.total_delivery_count ?? success.total_orders;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -110,29 +121,58 @@ function CallbackContent() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
+
         <h2 className="text-3xl font-semibold text-foreground mb-2">Payment Successful!</h2>
         <p className="text-muted-foreground mb-8">
-          {success.total_orders} {success.total_orders === 1 ? "order" : "orders"} created successfully
+          {isMixed ? (
+            <>
+              Mixed checkout created successfully — <strong>{deliveryCount} deliveries</strong>
+            </>
+          ) : isBulkOnly ? (
+            <>
+              Bulk order created successfully
+              {success.bulk_item_count != null ? (
+                <> — <strong>{success.bulk_item_count} items</strong></>
+              ) : null}
+            </>
+          ) : (
+            <>
+              {success.total_orders}{" "}
+              {success.total_orders === 1 ? "order" : "orders"} created successfully
+            </>
+          )}
         </p>
+
         <div className="bg-muted rounded-lg p-6 mb-8 text-left">
-          <p className="text-sm text-muted-foreground mb-4 text-center">Tracking numbers</p>
+          <p className="text-sm text-muted-foreground mb-4 text-center">
+            {isBulkOnly ? "Bulk order tracking" : "Tracking numbers"}
+          </p>
           <div className="space-y-3">
-            {success.orders.map((order, index) => (
+            {entries.map((entry, index) => (
               <div
-                key={order.tracking_number}
+                key={`${entry.kind}-${entry.tracking_number}`}
                 className="bg-background rounded-lg p-4 flex items-center justify-between"
               >
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Order {index + 1}</p>
-                  <p className="font-mono text-lg font-semibold text-foreground">{order.tracking_number}</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {entry.kind === "bulk" ? "Bulk order" : `Order ${index + 1}`}
+                  </p>
+                  <p className="font-mono text-lg font-semibold text-foreground">
+                    {entry.tracking_number}
+                  </p>
+                  {entry.kind === "bulk" && entry.bulk_item_count != null && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {entry.bulk_item_count} item{entry.bulk_item_count !== 1 ? "s" : ""}
+                    </p>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-primary">
-                    {order.price != null ? `₦${Number(order.price).toFixed(2)}` : "—"}
+                    {entry.price != null ? `₦${Number(entry.price).toFixed(2)}` : "—"}
                   </p>
                   <button
                     type="button"
-                    onClick={() => navigator.clipboard.writeText(order.tracking_number)}
+                    onClick={() => navigator.clipboard.writeText(entry.tracking_number)}
                     className="text-xs text-muted-foreground hover:text-foreground mt-1"
                   >
                     Copy
@@ -143,16 +183,32 @@ function CallbackContent() {
           </div>
           <div className="border-t border-border mt-6 pt-4 flex items-center justify-between">
             <span className="text-lg font-semibold text-foreground">Total paid</span>
-            <span className="text-2xl font-bold text-primary">₦{Number(success.total_price).toFixed(2)}</span>
+            <span className="text-2xl font-bold text-primary">
+              ₦{Number(success.total_price).toFixed(2)}
+            </span>
           </div>
         </div>
+
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button variant="primary" size="lg" onClick={() => router.push("/dashboard")}>
-            Create new order
-          </Button>
-          <Button variant="secondary" size="lg" onClick={() => router.push("/dashboard/orders")}>
-            View my orders
-          </Button>
+          {isBulkOnly ? (
+            <>
+              <Button variant="primary" size="lg" onClick={() => router.push("/dashboard/create-bulk")}>
+                New bulk order
+              </Button>
+              <Button variant="secondary" size="lg" onClick={() => router.push("/dashboard/orders")}>
+                View my orders
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="primary" size="lg" onClick={() => router.push("/dashboard")}>
+                {isMixed ? "Create another delivery" : "Create new order"}
+              </Button>
+              <Button variant="secondary" size="lg" onClick={() => router.push("/dashboard/orders")}>
+                View my orders
+              </Button>
+            </>
+          )}
         </div>
       </Card>
     </div>

@@ -1,4 +1,5 @@
-import { Card } from "@/components/ui";
+import Image from "next/image";
+import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
 
 interface Region {
   name: string;
@@ -12,49 +13,41 @@ interface CoverageProps {
   regions: Region[];
 }
 
-// Map old variant names to new ones
-const variantMap: Record<string, "accent" | "muted" | "secondary"> = {
-  sage: "accent",
-  lavender: "muted",
-  white: "secondary",
-};
-
-export function Coverage({ title, description, regions }: CoverageProps) {
+export function Coverage({ title, description }: CoverageProps) {
   return (
     <section id="coverage" className="section-padding bg-background">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground mb-4">
-            {title}
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            {description}
-          </p>
+          {/* Heading — blurs into focus like a camera refocusing */}
+          <RevealOnScroll variant="blurIn">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground mb-4">
+              {title}
+            </h2>
+          </RevealOnScroll>
+
+          {/* Description — plain opacity fade */}
+          <RevealOnScroll variant="fadeUp" delay={0.15}>
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+              {description}
+            </p>
+          </RevealOnScroll>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {regions.map((region) => (
-            <Card
-              key={region.name}
-              variant={variantMap[region.variant] || "accent"}
-              className="p-6 transition-transform transition-shadow duration-200 hover:-translate-y-1 hover:shadow-md"
-            >
-              <h3 className="text-xl font-semibold text-foreground mb-4">
-                {region.name}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {region.areas.map((area) => (
-                  <span
-                    key={area}
-                    className="px-4 py-2 bg-card/70 rounded-lg text-sm font-medium text-foreground"
-                  >
-                    {area}
-                  </span>
-                ))}
-              </div>
-            </Card>
-          ))}
-        </div>
+        {/* Image — starts tilted and scales into place */}
+        <RevealOnScroll variant="tilt" delay={0.2} duration={0.8}>
+          <div className="mx-auto w-full max-w-4xl">
+            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-transparent sm:rounded-3xl">
+              <Image
+                src="/lagos2_backgrounf_removed.png"
+                alt="Lagos coverage map"
+                fill
+                className="object-contain"
+                sizes="(max-width: 640px) 92vw, (max-width: 1024px) 800px, 900px"
+                priority
+              />
+            </div>
+          </div>
+        </RevealOnScroll>
       </div>
     </section>
   );

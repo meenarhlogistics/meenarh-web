@@ -2,6 +2,7 @@
 
 import { FloatingIconsHero } from "@/components/ui/floating-icons-hero-section";
 import type { FloatingIconsHeroProps } from "@/components/ui/floating-icons-hero-section";
+import { HERO_CONTENT } from "@/lib/constants";
 import { MapPin } from "lucide-react";
 
 interface HeroProps {
@@ -45,7 +46,7 @@ export function Hero({
       title={headline}
       subtitle={subheadline}
       ctaText={primaryCta}
-      ctaHref="#hero"
+      ctaHref={HERO_CONTENT.trackHref}
       icons={heroIcons}
       cursiveAccent={cursiveAccent}
       secondaryCta={secondaryCta}

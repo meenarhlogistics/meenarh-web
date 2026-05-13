@@ -1,9 +1,8 @@
 {
   "/page": "app/page.js",
   "/login/page": "app/login/page.js",
-  "/blog/page": "app/blog/page.js",
-  "/blog/[slug]/page": "app/blog/[slug]/page.js",
-  "/dashboard/verify-phone/page": "app/dashboard/verify-phone/page.js",
-  "/admin/(dashboard)/page": "app/admin/(dashboard)/page.js",
-  "/admin/(dashboard)/orders/page": "app/admin/(dashboard)/orders/page.js"
+  "/signup/page": "app/signup/page.js",
+  "/dashboard/cart/page": "app/dashboard/cart/page.js",
+  "/dashboard/track/page": "app/dashboard/track/page.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }

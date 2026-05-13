@@ -8,10 +8,32 @@ export const SITE_CONFIG = {
   whatsappLabel: "Chat on WhatsApp",
 };
 
+/** Full-viewport home footer copy (layout in Footer variant="fullPage") */
+export const FOOTER_LANDING_CONTENT = {
+  headline: "Let's talk about your deliveries and the next steps.",
+  primaryCta: { label: "Get started", href: "/signup" },
+  secondaryCta: {
+    label: "hello@meenarh.com",
+    href: "mailto:hello@meenarh.com",
+  },
+  quickContactLabel: "Quick contact",
+  /** Shown next to quick contact label; href still comes from WhatsApp settings / props */
+  quickContactLinkLabel: "WhatsApp",
+  socialLabel: "Social media",
+  socialLinks: [
+    { label: "X (Twitter)", href: "https://x.com/meenarh" },
+    { label: "Instagram", href: "https://instagram.com/meenarh" },
+  ],
+  /** Set when a privacy page exists; omitted from UI when falsy */
+  privacyHref: undefined as string | undefined,
+  /** Optional right-side credit line in the bottom bar */
+  attribution: undefined as string | undefined,
+};
+
 export const NAV_LINKS = [
   { label: "How It Works", href: "#how-it-works" },
   { label: "Coverage", href: "#coverage" },
-  { label: "Track", href: "#hero" },
+  { label: "Track", href: "/dashboard/track" },
   { label: "Blog", href: "/blog" },
 ];
 
@@ -20,6 +42,8 @@ export const HERO_CONTENT = {
   subheadline:
     "From Yaba to Lekki, Ikeja to Ajah — we keep every Lagos delivery trackable in real time.",
   primaryCta: "Track a Package",
+  /** Base path for hero “Track” submit (query `tracking` appended when code entered) */
+  trackHref: "/dashboard/track",
   secondaryCta: "Request a Pickup",
   inputPlaceholder: "Enter tracking code (e.g. MN-2026-0001)",
   cursiveAccent: "Trackable",
@@ -32,19 +56,19 @@ export const HOW_IT_WORKS_CONTENT = {
       id: 1,
       title: "Book a Pickup",
       description: "Provide pickup and delivery details.",
-      icon: "calendar",
+      imageSrc: "/Book-a-pickup.png",
     },
     {
       id: 2,
       title: "We Handle the Delivery",
       description: "A rider picks up and moves your package.",
-      icon: "truck",
+      imageSrc: "/we-handle-delivery.png",
     },
     {
       id: 3,
       title: "Track in Real Time",
       description: "Receive live status updates until delivery.",
-      icon: "location",
+      imageSrc: "/track-in-realtime.png",
     },
   ],
 };
@@ -145,4 +169,8 @@ export const CTA_CONTENT = {
     "Sign in to request a pickup and start tracking your deliveries in real time.",
   buttonText: "Get Started",
   helperText: "New to Meenarh? Create an account to begin",
+  primaryHref: "/login",
+  /** Set when iOS app is published; row hidden if both store URLs are unset */
+  appStoreHref: undefined as string | undefined,
+  googlePlayHref: undefined as string | undefined,
 };

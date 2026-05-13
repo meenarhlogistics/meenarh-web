@@ -182,7 +182,7 @@ export default function VerifyPhonePage() {
               onClick={() => router.push("/dashboard")}
               disabled={status !== "idle"}
             >
-              Back to dashboard
+              Back to overview
             </Button>
           </div>
         </form>

@@ -47,6 +47,11 @@ export const adminApi = {
     return res.data;
   },
 
+  async logout(): Promise<{ success: boolean; message: string }> {
+    const res = await adminClient.post<{ success: boolean; message: string }>("/admin/logout", {});
+    return res.data;
+  },
+
   // Blog
   async getBlogPosts() {
     const res = await adminClient.get("/admin/blog");
@@ -157,6 +162,23 @@ export const adminApi = {
   },
   async updateOrderStatus(id: number, status: string, note?: string) {
     const res = await adminClient.patch(`/admin/orders/${id}/status`, { status, note });
+    return res.data;
+  },
+
+  // Bulk orders
+  async getBulkOrders() {
+    const res = await adminClient.get("/admin/bulk-orders");
+    return res.data;
+  },
+  async getBulkOrder(id: number) {
+    const res = await adminClient.get(`/admin/bulk-orders/${id}`);
+    return res.data;
+  },
+  async updateBulkItemStatus(bulkId: number, itemId: number, status: string, note?: string) {
+    const res = await adminClient.patch(
+      `/admin/bulk-orders/${bulkId}/items/${itemId}/status`,
+      { status, note }
+    );
     return res.data;
   },
 

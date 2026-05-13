@@ -6,8 +6,10 @@ import { CartItem } from "./CartItem";
 import { useCartStore } from "@/lib/store/cartStore";
 
 export function CartSummary() {
-  const { items, getTotalPrice, isLoading } = useCartStore();
+  const { items, getTotalPrice, getItemCount, getEntryCount, isLoading } = useCartStore();
   const totalPrice = Number(getTotalPrice()) || 0;
+  const deliveryCount = getItemCount();
+  const entryCount = getEntryCount();
 
   if (isLoading) {
     return (
@@ -66,8 +68,12 @@ export function CartSummary() {
       <Card className="p-6 bg-muted/50">
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Total Items</span>
-            <span className="font-medium text-foreground">{items.length}</span>
+            <span className="text-muted-foreground">Cart Entries</span>
+            <span className="font-medium text-foreground">{entryCount}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Total Deliveries</span>
+            <span className="font-medium text-foreground">{deliveryCount}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>

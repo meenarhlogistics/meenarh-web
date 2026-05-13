@@ -1,36 +1,93 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useCartStore } from "@/lib/store/cartStore";
 import { Button, Badge } from "@/components/ui";
-import { Package, ShoppingCart, ClipboardList, Search } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  ClipboardList,
+  Search,
+  ChevronDown,
+} from "lucide-react";
 
-interface NavItem {
+interface NavChild {
   href: string;
   label: string;
+  /** When true, pathname must start with href (for nested routes) */
+  prefixMatch?: boolean;
+}
+
+interface NavItem {
+  href?: string;
+  label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  /** When true, pathname must start with href (for nested routes) */
+  prefixMatch?: boolean;
+  children?: NavChild[];
 }
 
 const navItems: NavItem[] = [
-  { href: "/dashboard", label: "Create Order", icon: Package },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  {
+    label: "Delivery",
+    icon: Package,
+    children: [
+      { href: "/dashboard/create", label: "Single Delivery", prefixMatch: true },
+      { href: "/dashboard/create-bulk", label: "Bulk Delivery", prefixMatch: true },
+    ],
+  },
   { href: "/dashboard/cart", label: "Cart", icon: ShoppingCart },
   { href: "/dashboard/orders", label: "My Orders", icon: ClipboardList },
   { href: "/dashboard/track", label: "Track Order", icon: Search },
 ];
+
+/** Exact match, or prefix match with a `/` boundary so `/dashboard/create`
+ *  does not incorrectly match `/dashboard/create-bulk`. */
+function matchPath(pathname: string, href: string, prefixMatch?: boolean) {
+  if (!prefixMatch) return pathname === href;
+  return pathname === href || pathname.startsWith(href + "/");
+}
 
 export function DashboardSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const { getItemCount } = useCartStore();
   const cartCount = getItemCount();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = "/login";
+  const isChildActive = (children?: NavChild[]) =>
+    !!children?.some((c) => matchPath(pathname, c.href, c.prefixMatch));
+
+  // Auto-expand any parent whose child route is currently active
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    navItems.forEach((item) => {
+      if (item.children && isChildActive(item.children)) {
+        initial[item.label] = true;
+      }
+    });
+    return initial;
+  });
+
+  const toggleMenu = (label: string) =>
+    setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      // Full reload so any cached authenticated state (queries, in-memory
+      // stores) is dropped along with the cleared cookies.
+      window.location.href = "/login";
+    }
   };
 
   return (
@@ -53,16 +110,78 @@ export function DashboardSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
-          const isCart = item.href === "/dashboard/cart";
+
+          if (item.children && item.children.length > 0) {
+            const parentActive = isChildActive(item.children);
+            const open = openMenus[item.label] ?? false;
+
+            return (
+              <div key={item.label}>
+                <button
+                  type="button"
+                  onClick={() => toggleMenu(item.label)}
+                  aria-expanded={open}
+                  className={`
+                    w-full flex items-center gap-3 px-4 py-3 rounded-lg
+                    transition-colors duration-200
+                    ${
+                      parentActive
+                        ? "bg-accent text-foreground font-medium"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }
+                  `}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      open ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {open && (
+                  <div className="mt-1 ml-8 pl-3 border-l border-border space-y-1">
+                    {item.children.map((child) => {
+                      const childActive = matchPath(
+                        pathname,
+                        child.href,
+                        child.prefixMatch
+                      );
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className={`
+                            block px-3 py-2 rounded-lg text-sm transition-colors
+                            ${
+                              childActive
+                                ? "bg-accent text-foreground font-medium"
+                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            }
+                          `}
+                        >
+                          {child.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          const href = item.href!;
+          const isActive = matchPath(pathname, href, item.prefixMatch);
+          const isCart = href === "/dashboard/cart";
 
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={href}
+              href={href}
               className={`
                 flex items-center gap-3 px-4 py-3 rounded-lg
                 transition-colors transition-transform duration-200
@@ -107,8 +226,9 @@ export function DashboardSidebar() {
           size="sm"
           className="w-full"
           onClick={handleLogout}
+          disabled={isLoggingOut}
         >
-          Logout
+          {isLoggingOut ? "Logging out…" : "Logout"}
         </Button>
       </div>
     </aside>

@@ -36,7 +36,7 @@ export function PaymentStep({ onBack }: PaymentStepProps) {
   } | null>(null);
 
   const totalPrice = Number(getTotalPrice()) || 0;
-  const itemCount = getItemCount();
+  const deliveryCount = getItemCount();
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
@@ -65,8 +65,8 @@ export function PaymentStep({ onBack }: PaymentStepProps) {
 
   const handleCheckout = async () => {
     setError("");
-    if (!user?.is_phone_verified) {
-      router.push("/dashboard/verify-phone");
+    if (!user?.is_email_verified) {
+      router.push("/dashboard/verify-email");
       return;
     }
     setIsProcessing(true);
@@ -153,8 +153,8 @@ export function PaymentStep({ onBack }: PaymentStepProps) {
         </h2>
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Total Items</span>
-            <span className="font-medium text-foreground">{itemCount}</span>
+            <span className="text-muted-foreground">Total Deliveries</span>
+            <span className="font-medium text-foreground">{deliveryCount}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Delivery Fee</span>
@@ -206,7 +206,7 @@ export function PaymentStep({ onBack }: PaymentStepProps) {
           variant="primary"
           size="lg"
           onClick={handleCheckout}
-          disabled={isProcessing || itemCount === 0}
+          disabled={isProcessing || deliveryCount === 0}
         >
           {isProcessing ? "Redirecting…" : `Pay with Paystack (₦${finalPrice.toFixed(2)})`}
         </Button>

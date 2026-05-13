@@ -2,12 +2,8 @@
 
 import * as React from "react";
 import { useState } from "react";
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  useScroll,
-} from "framer-motion";
+import { useRouter } from "next/navigation";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui";
@@ -113,12 +109,7 @@ const Icon = ({
           ease: "easeInOut",
         }}
       >
-        <iconData.icon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-        {iconData.label && (
-          <span className="mt-1 text-[10px] md:text-xs font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full whitespace-nowrap">
-            {iconData.label}
-          </span>
-        )}
+        <iconData.icon className="w-5 h-5 md:w-6 md:h-6 text-primary" aria-hidden />
       </motion.div>
     </motion.div>
   );
@@ -162,25 +153,11 @@ const FloatingIconsHero = React.forwardRef<
     },
     ref
   ) => {
+    const router = useRouter();
     const mouseX = React.useRef(0);
     const mouseY = React.useRef(0);
     const [trackingCode, setTrackingCode] = useState("");
 
-    // scrollY from framer-motion — a live MotionValue, no re-renders.
-    const { scrollY } = useScroll();
-
-    // Y offset applied to the fixed icon layer.
-    // While free-scrolling: 0 (icons stay locked to viewport).
-    // After stick point: stickPoint - scrollY  →  icons appear anchored
-    // to their page position at the bottom of HowItWorks and scroll off
-    // the top naturally as the user continues scrolling down.
-    const iconLayerY = useMotionValue(0);
-
-    // The scrollY value captured the moment TrackingPreview enters view.
-    const stickPointRef = React.useRef<number | null>(null);
-
-    // Track global mouse position so the repulsion effect works
-    // while the icons are still visible over HowItWorks.
     React.useEffect(() => {
       const updateMouse = (e: MouseEvent) => {
         mouseX.current = e.clientX;
@@ -190,65 +167,25 @@ const FloatingIconsHero = React.forwardRef<
       return () => window.removeEventListener("mousemove", updateMouse);
     }, []);
 
-    // Subscribe to scroll changes and apply the sticky offset once
-    // the stick point has been set by the IntersectionObserver below.
-    React.useEffect(() => {
-      return scrollY.on("change", (latest) => {
-        const stickAt = stickPointRef.current;
-        if (stickAt !== null) {
-          iconLayerY.set(stickAt - latest);
-        } else {
-          iconLayerY.set(0);
-        }
-      });
-    }, [scrollY, iconLayerY]);
-
-    // Observe the TrackingPreview section. When it enters the viewport
-    // (user has scrolled past HowItWorks), lock the stick point.
-    // When it leaves again (user scrolls back up), release it.
-    React.useEffect(() => {
-      const target = document.getElementById("tracking-preview");
-      if (!target) return;
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            // Capture the scroll position at the exact moment the
-            // next section becomes visible — only on the first entry.
-            if (stickPointRef.current === null) {
-              stickPointRef.current = window.scrollY;
-            }
-          } else {
-            // Only release the lock when scrolling BACK UP (section
-            // re-enters from below the viewport, meaning top > 0).
-            // When scrolling DOWN past it (top < 0), keep the lock so
-            // the icons stay anchored and do not reappear.
-            if (entry.boundingClientRect.top > 0) {
-              stickPointRef.current = null;
-              iconLayerY.set(0);
-            }
-          }
-        },
-        { threshold: 0 }
-      );
-
-      observer.observe(target);
-      return () => observer.disconnect();
-    }, [iconLayerY]);
-
     const handleTrack = () => {
-      if (trackingCode.trim()) {
-        console.log("Tracking:", trackingCode);
-      }
+      const q = trackingCode.trim();
+      if (!q) return;
+      const sep = ctaHref.includes("?") ? "&" : "?";
+      router.push(`${ctaHref}${sep}tracking=${encodeURIComponent(q)}`);
     };
 
     return (
-      <>
-        {/* Fixed icon layer — z-[5] keeps it above section backgrounds.
-            The `y` motion value handles the sticky-scroll effect.      */}
+      <section
+        ref={ref}
+        id="hero"
+        className={cn(
+          "relative w-full min-h-screen overflow-hidden flex items-center justify-center bg-background pt-24 pb-16 px-4",
+          className
+        )}
+        {...props}
+      >
         <motion.div
-          className="fixed inset-0 w-full h-full pointer-events-none z-[5]"
-          style={{ y: iconLayerY }}
+          className="pointer-events-none absolute inset-0 z-[5]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -264,60 +201,43 @@ const FloatingIconsHero = React.forwardRef<
           ))}
         </motion.div>
 
-        {/* Hero section — foreground content only. */}
-        <section
-          ref={ref}
-          id="hero"
-          className={cn(
-            "relative w-full min-h-screen flex items-center justify-center bg-background pt-24 pb-16 px-4",
-            className
-          )}
-          {...props}
-        >
-          <div className="relative z-10 max-w-2xl mx-auto text-center space-y-6 animate-reveal">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight text-foreground leading-tight">
-              {renderHeadline(title, cursiveAccent)}
-            </h1>
+        <div className="relative z-10 mx-auto max-w-2xl space-y-6 text-center animate-reveal">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight text-foreground leading-tight">
+            {renderHeadline(title, cursiveAccent)}
+          </h1>
 
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-md mx-auto">
-              {subtitle}
-            </p>
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-md mx-auto">{subtitle}</p>
 
-            <div className="max-w-md mx-auto">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1">
-                  <Input
-                    type="text"
-                    placeholder={inputPlaceholder}
-                    value={trackingCode}
-                    onChange={(e) => setTrackingCode(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleTrack()}
-                  />
-                </div>
-                <Button
-                  variant="default"
-                  onClick={handleTrack}
-                  className="transition-colors duration-200 hover:shadow-md"
-                >
-                  {ctaText}
-                </Button>
+          <div className="max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                <Input
+                  type="text"
+                  placeholder={inputPlaceholder}
+                  value={trackingCode}
+                  onChange={(e) => setTrackingCode(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleTrack()}
+                />
               </div>
+              <Button
+                variant="default"
+                onClick={handleTrack}
+                className="transition-colors duration-200 hover:shadow-md"
+              >
+                {ctaText}
+              </Button>
             </div>
-
-            {secondaryCta && (
-              <div className="mt-4">
-                <Button
-                  variant="outline"
-                  asChild
-                  className="transition-colors duration-200"
-                >
-                  <a href="#request-pickup">{secondaryCta}</a>
-                </Button>
-              </div>
-            )}
           </div>
-        </section>
-      </>
+
+          {secondaryCta && (
+            <div className="mt-4">
+              <Button variant="outline" asChild className="transition-colors duration-200">
+                <a href="#request-pickup">{secondaryCta}</a>
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
     );
   }
 );

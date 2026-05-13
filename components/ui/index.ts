@@ -1,8 +1,11 @@
 export { Button } from "./ButtonLegacy";
 export { Input } from "./Input";
 export { Card } from "./Card";
+export { ConfirmationDialog } from "./ConfirmationDialog";
 export { GrainOverlay } from "./GrainOverlay";
 export { Select } from "./Select";
 export { Textarea } from "./Textarea";
 export { Toggle } from "./Toggle";
 export { Badge } from "./Badge";
+export { RevealOnScroll } from "./RevealOnScroll";
+export type { AnimVariant } from "./RevealOnScroll";

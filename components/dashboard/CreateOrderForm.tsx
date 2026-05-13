@@ -27,7 +27,7 @@ export function CreateOrderForm() {
   const searchParams = useSearchParams();
   const user = useAuthStore((state) => state.user);
   const { addItem, items } = useCartStore();
-  const isPhoneVerified = Boolean(user?.is_phone_verified);
+  const isEmailVerified = Boolean(user?.is_email_verified);
   
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<CreateOrderRequest>({
@@ -374,9 +374,9 @@ export function CreateOrderForm() {
           </p>
         </div>
 
-        {!isPhoneVerified && (
+        {!isEmailVerified && (
           <div className="p-4 rounded-lg border bg-primary/10 border-primary/20 text-sm text-primary">
-            Verify your phone to place orders. You can still add items to your cart, but checkout is disabled until you verify.
+            Please verify your email before placing an order. You can build your cart now, but payment requires email verification.
           </div>
         )}
 
@@ -605,7 +605,7 @@ export function CreateOrderForm() {
               variant="primary"
               size="lg"
               onClick={handleContinueToReview}
-              disabled={isLoading || !isPhoneVerified}
+              disabled={isLoading}
             >
               Continue to Review ({items.length})
             </Button>
@@ -646,7 +646,7 @@ export function CreateOrderForm() {
             variant="primary"
             size="lg"
             onClick={() => setCurrentStep(3)}
-            disabled={items.length === 0 || !isPhoneVerified}
+            disabled={items.length === 0}
           >
             Continue to Payment
           </Button>

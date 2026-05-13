@@ -3,19 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button, Input } from "@/components/ui";
 import apiClient from "@/lib/api/client";
 
+const PASSWORD_RESET_PHONE_KEY = "password_reset_phone";
+
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setMessage("");
 
     if (!phone) {
       setError("Phone is required");
@@ -26,17 +28,18 @@ export default function ForgotPasswordPage() {
 
     try {
       await apiClient.post("/auth/forgot-password", { phone });
-      setMessage(
-        "If an account exists for this phone number, a reset link has been sent to your WhatsApp."
-      );
     } catch (err) {
       console.error("Forgot password error:", err);
-      setMessage(
-        "If an account exists for this phone number, a reset link has been sent to your WhatsApp."
-      );
-    } finally {
-      setIsLoading(false);
+      // Same opaque UX as backend: proceed to reset screen with phone prefilled.
     }
+
+    try {
+      sessionStorage.setItem(PASSWORD_RESET_PHONE_KEY, phone.trim());
+    } catch {
+      // ignore quota / privacy mode
+    }
+    setIsLoading(false);
+    router.push("/reset-password");
   };
 
   return (
@@ -52,7 +55,7 @@ export default function ForgotPasswordPage() {
         />
       </div>
 
-      <div className="relative z-10 w/full max-w-md">
+      <div className="relative z-10 w-full max-w-md">
         <Link href="/" className="flex items-center justify-center gap-2 mb-8">
           <Image
             src="/meenarh logo.svg"
@@ -73,19 +76,13 @@ export default function ForgotPasswordPage() {
             </h1>
             <p className="text-muted-foreground">
               Enter the phone number linked to your account. We&apos;ll send a
-              secure reset link to your WhatsApp.
+              verification code to your WhatsApp so you can set a new password.
             </p>
           </div>
 
           {error && (
             <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
               {error}
-            </div>
-          )}
-
-          {message && (
-            <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-500 text-sm">
-              {message}
             </div>
           )}
 
@@ -108,7 +105,7 @@ export default function ForgotPasswordPage() {
               className="w-full"
               disabled={isLoading}
             >
-              {isLoading ? "Sending link..." : "Send reset link"}
+              {isLoading ? "Sending code..." : "Send verification code"}
             </Button>
           </form>
 
@@ -125,4 +122,3 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
-

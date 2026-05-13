@@ -8,6 +8,7 @@ import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 
+
 export default function DashboardLayout({
   children,
 }: {
@@ -25,11 +26,13 @@ export default function DashboardLayout({
   }, [loadAuth]);
 
   useEffect(() => {
-    // Fetch cart when authenticated
-    if (isAuthenticated) {
+    if (!isAuthenticated || !user) return;
+    const canUseCart =
+      Boolean(user.is_email_verified) || user.email_verification_enforced === false;
+    if (canUseCart) {
       fetchCart();
     }
-  }, [isAuthenticated, fetchCart]);
+  }, [isAuthenticated, user, fetchCart]);
 
   useEffect(() => {
     // Redirect to login if not authenticated
@@ -39,11 +42,17 @@ export default function DashboardLayout({
   }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    if (isLoading || !isAuthenticated) return;
-    if (user?.is_phone_verified) return;
-    if (pathname === "/dashboard/verify-phone") return;
-    router.replace("/dashboard/verify-phone");
-  }, [isAuthenticated, isLoading, pathname, router, user?.is_phone_verified]);
+    if (isLoading || !isAuthenticated || !user) return;
+
+    const enforced = user.email_verification_enforced !== false;
+
+    if (enforced && !user.is_email_verified) {
+      if (pathname !== "/dashboard/verify-email") {
+        router.replace("/dashboard/verify-email");
+      }
+      return;
+    }
+  }, [isAuthenticated, isLoading, pathname, router, user]);
 
   // Show loading state while checking auth
   if (isLoading) {

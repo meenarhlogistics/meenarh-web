@@ -1,30 +1,46 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button, Input } from "@/components/ui";
 import apiClient from "@/lib/api/client";
 
-export function ResetPasswordForm() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const token = searchParams.get("token") || "";
+const PASSWORD_RESET_PHONE_KEY = "password_reset_phone";
 
+export function ResetPasswordForm() {
+  const router = useRouter();
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(PASSWORD_RESET_PHONE_KEY);
+      if (stored) setPhone(stored);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setMessage("");
 
-    if (!token) {
-      setError("Invalid or missing token");
+    if (!phone.trim()) {
+      setError("Enter the phone number you used when requesting the code.");
+      return;
+    }
+
+    const normalizedCode = code.replace(/\s/g, "");
+    if (!/^\d{6}$/.test(normalizedCode)) {
+      setError("Enter the 6-digit code sent to your WhatsApp.");
       return;
     }
 
@@ -42,11 +58,17 @@ export function ResetPasswordForm() {
 
     try {
       const response = await apiClient.post("/auth/reset-password", {
-        token,
+        phone: phone.trim(),
+        code: normalizedCode,
         newPassword: password,
       });
 
       if (response.data?.success) {
+        try {
+          sessionStorage.removeItem(PASSWORD_RESET_PHONE_KEY);
+        } catch {
+          // ignore
+        }
         setMessage("Password reset successful. Redirecting to login...");
         setTimeout(() => {
           router.push("/login");
@@ -56,9 +78,10 @@ export function ResetPasswordForm() {
       }
     } catch (err: unknown) {
       console.error("Reset password error:", err);
-      const error = err as { response?: { data?: { message?: string } } };
+      const errObj = err as { response?: { data?: { message?: string } } };
       setError(
-        error.response?.data?.message || "Failed to reset password. The link may have expired."
+        errObj.response?.data?.message ||
+          "Invalid or expired code. Request a new code from Forgot password."
       );
     } finally {
       setIsLoading(false);
@@ -98,7 +121,7 @@ export function ResetPasswordForm() {
               Reset password
             </h1>
             <p className="text-muted-foreground">
-              Choose a strong new password for your account.
+              Enter the code from WhatsApp and choose a new password.
             </p>
           </div>
 
@@ -115,6 +138,32 @@ export function ResetPasswordForm() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="tel"
+              label="Phone (WhatsApp)"
+              name="phone"
+              placeholder="+2348012345678"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              id="reset-phone"
+            />
+
+            <Input
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              label="Verification code"
+              name="code"
+              placeholder="123456"
+              value={code}
+              onChange={(e) =>
+                setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
+              required
+              id="reset-code"
+            />
+
             <Input
               type="password"
               label="New password"
@@ -148,7 +197,13 @@ export function ResetPasswordForm() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center flex flex-col gap-2">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-muted-foreground hover:underline font-medium"
+            >
+              Didn&apos;t get a code? Send again
+            </Link>
             <Link
               href="/login"
               className="text-sm text-primary hover:underline font-medium"

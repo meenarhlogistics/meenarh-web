@@ -1,5 +1,6 @@
 import apiClient from './client';
 import {
+  CreateBulkOrderRequest,
   CartItem,
   CartResponse,
   AddToCartResponse,
@@ -12,6 +13,11 @@ export const cartApi = {
     item: Omit<CartItem, 'id' | 'user_id' | 'created_at' | 'updated_at'>
   ): Promise<AddToCartResponse> => {
     const response = await apiClient.post('/cart', item);
+    return response.data;
+  },
+
+  addBulkToCart: async (entry: CreateBulkOrderRequest): Promise<AddToCartResponse> => {
+    const response = await apiClient.post('/cart/bulk', entry);
     return response.data;
   },
 
@@ -30,9 +36,22 @@ export const cartApi = {
     return response.data;
   },
 
+  updateBulkCartEntry: async (
+    id: number,
+    data: CreateBulkOrderRequest
+  ): Promise<AddToCartResponse> => {
+    const response = await apiClient.patch(`/cart/bulk/${id}`, data);
+    return response.data;
+  },
+
   // Remove item from cart
   removeCartItem: async (id: number): Promise<{ success: boolean; message: string }> => {
     const response = await apiClient.delete(`/cart/${id}`);
+    return response.data;
+  },
+
+  removeBulkCartEntry: async (id: number): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient.delete(`/cart/bulk/${id}`);
     return response.data;
   },
 

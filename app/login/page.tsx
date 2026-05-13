@@ -46,6 +46,19 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error("Login error:", err);
+      const axiosErr = err as {
+        response?: { status?: number; data?: { message?: string; code?: string } };
+      };
+      if (
+        axiosErr.response?.status === 403 &&
+        axiosErr.response?.data?.code === "EMAIL_NOT_VERIFIED"
+      ) {
+        setError(
+          axiosErr.response.data.message ||
+            "Please verify your email before signing in."
+        );
+        return;
+      }
       const error = err as { response?: { data?: { message?: string } } };
       setError(
         error.response?.data?.message || "Invalid email or password"

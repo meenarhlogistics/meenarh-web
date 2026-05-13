@@ -56,11 +56,9 @@ export default function SignupPage() {
       const response = await authApi.signup(signupData);
       
       if (response.success) {
-        // Store auth data
         setAuth(response.data.user);
-        
-        // Redirect to dashboard
-        router.push("/dashboard");
+
+        router.push("/dashboard/verify-email");
       } else {
         setError(response.message || "Signup failed");
       }
