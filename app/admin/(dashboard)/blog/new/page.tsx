@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, FormErrorAlert } from "@/components/ui";
+import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { adminApi } from "@/lib/api/admin";
 
@@ -12,16 +13,16 @@ export default function NewBlogPostPage() {
   const [content, setContent] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   const handleSave = async (status: "draft" | "published") => {
-    setError("");
+    setErrorDetails(null);
     if (!title.trim()) {
-      setError("Title is required");
+      setErrorDetails({ message: "Title is required" });
       return;
     }
     if (!content.trim() || content === "<p></p>") {
-      setError("Content is required");
+      setErrorDetails({ message: "Content is required" });
       return;
     }
 
@@ -35,8 +36,7 @@ export default function NewBlogPostPage() {
       });
       router.push("/admin/blog");
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setError(e.response?.data?.message || "Failed to create post");
+      setErrorDetails(getApiErrorDetails(err, "Failed to create post"));
     } finally {
       setSaving(false);
     }
@@ -59,11 +59,10 @@ export default function NewBlogPostPage() {
         </div>
       </div>
 
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-          {error}
-        </div>
-      )}
+      <FormErrorAlert
+        message={errorDetails?.message}
+        items={errorDetails?.items}
+      />
 
       <Input
         label="Title"

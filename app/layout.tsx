@@ -3,6 +3,7 @@ import { Montserrat, Merriweather, Source_Code_Pro } from "next/font/google";
 import "./globals.css";
 import { GrainOverlay } from "@/components/ui/GrainOverlay";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
+import { ToastProvider } from "@/components/providers/ToastProvider";
 
 const montserrat = Montserrat({
   variable: "--font-sans",
@@ -55,6 +56,7 @@ export default function RootLayout({
         <AnalyticsProvider>
           {children}
         </AnalyticsProvider>
+        <ToastProvider />
         <GrainOverlay />
       </body>
     </html>

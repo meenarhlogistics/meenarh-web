@@ -6,6 +6,8 @@ import { Button, Input } from "@/components/ui";
 import { OrderTimeline } from "@/components/dashboard/OrderTimeline";
 import { ordersApi } from "@/lib/api/orders";
 import type { OrderDetail } from "@/types";
+import { FormErrorAlert } from "@/components/ui";
+import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 
 export default function TrackOrderPage() {
   const searchParams = useSearchParams();
@@ -14,7 +16,7 @@ export default function TrackOrderPage() {
   const [trackingNumber, setTrackingNumber] = useState(trackingParam || "");
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   useEffect(() => {
     // Auto-track if tracking number in URL
@@ -26,11 +28,11 @@ export default function TrackOrderPage() {
 
   const handleTrack = async () => {
     if (!trackingNumber.trim()) {
-      setError("Please enter a tracking number");
+      setErrorDetails({ message: "Please enter a tracking number" });
       return;
     }
 
-    setError("");
+    setErrorDetails(null);
     setIsLoading(true);
     setOrder(null);
 
@@ -41,15 +43,9 @@ export default function TrackOrderPage() {
       }
     } catch (err) {
       console.error("Track order error:", err);
-      const error = err as { response?: { status?: number; data?: { message?: string } } };
-      if (error.response?.status === 404) {
-        setError("Order not found. Please check the tracking number.");
-      } else {
-        setError(
-          error.response?.data?.message ||
-            "Failed to track order. Please try again."
-        );
-      }
+      setErrorDetails(
+        getApiErrorDetails(err, "Failed to track order. Please try again.")
+      );
     } finally {
       setIsLoading(false);
     }
@@ -94,12 +90,12 @@ export default function TrackOrderPage() {
         </div>
       </form>
 
-      {/* Error State */}
-      {error && (
-        <div className="max-w-2xl p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-          {error}
-        </div>
-      )}
+      <div className="max-w-2xl">
+        <FormErrorAlert
+          message={errorDetails?.message}
+          items={errorDetails?.items}
+        />
+      </div>
 
       {/* Loading State */}
       {isLoading && (
@@ -125,7 +121,7 @@ export default function TrackOrderPage() {
       )}
 
       {/* Empty State */}
-      {!order && !isLoading && !error && (
+      {!order && !isLoading && !errorDetails && (
         <div className="text-center py-16">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <svg

@@ -6,6 +6,7 @@ import { Button, Card } from "@/components/ui";
 import { paymentsApi } from "@/lib/api/payments";
 import { useCartStore } from "@/lib/store/cartStore";
 import type { CheckoutResponse } from "@/types";
+import { getApiErrorMessage } from "@/lib/errors/apiError";
 
 type SuccessData = NonNullable<CheckoutResponse["data"]>;
 
@@ -40,17 +41,16 @@ function CallbackContent() {
         }
       } catch (err) {
         if (cancelled) return;
-        const e = err as { response?: { data?: { message?: string } } };
-        const msg = e.response?.data?.message || "";
+        const msg = getApiErrorMessage(
+          err,
+          "Could not verify payment. If you were charged, contact support with your reference."
+        );
         if (msg === "PHONE_NOT_VERIFIED") {
           setErrorCode("PHONE_NOT_VERIFIED");
           setError("Verify your phone number before orders can be created.");
         } else {
           setErrorCode(null);
-          setError(
-            e.response?.data?.message ||
-              "Could not verify payment. If you were charged, contact support with your reference."
-          );
+          setError(msg);
         }
       } finally {
         if (!cancelled) setLoading(false);

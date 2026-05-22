@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, FormErrorAlert } from "@/components/ui";
+import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 
 interface PromoFormData {
   code: string;
@@ -28,18 +29,18 @@ export function PromoCodeForm({ initialData, onSubmit, submitLabel }: PromoCodeF
     expires_at: initialData?.expires_at ? initialData.expires_at.split("T")[0] : "",
   });
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setErrorDetails(null);
 
     if (!form.code.trim()) {
-      setError("Code is required");
+      setErrorDetails({ message: "Code is required" });
       return;
     }
     if (form.discount_value <= 0) {
-      setError("Discount value must be positive");
+      setErrorDetails({ message: "Discount value must be positive" });
       return;
     }
 
@@ -47,8 +48,7 @@ export function PromoCodeForm({ initialData, onSubmit, submitLabel }: PromoCodeF
     try {
       await onSubmit(form);
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setError(e.response?.data?.message || "Failed to save promo code");
+      setErrorDetails(getApiErrorDetails(err, "Failed to save promo code"));
     } finally {
       setSaving(false);
     }
@@ -56,11 +56,10 @@ export function PromoCodeForm({ initialData, onSubmit, submitLabel }: PromoCodeF
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-          {error}
-        </div>
-      )}
+      <FormErrorAlert
+        message={errorDetails?.message}
+        items={errorDetails?.items}
+      />
 
       <Input
         label="Promo Code"

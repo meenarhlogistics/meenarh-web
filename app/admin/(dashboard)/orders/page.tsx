@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { adminApi } from "@/lib/api/admin";
-import { Badge, Button, Input } from "@/components/ui";
+import { Badge, Button, Input, FormErrorAlert } from "@/components/ui";
+import { getApiErrorDetails, showApiErrorToast, type ParsedApiError } from "@/lib/errors/apiError";
 
 interface Order {
   id: number;
@@ -46,18 +47,19 @@ function StatusModal({ order, onClose, onUpdated }: StatusModalProps) {
   const [status, setStatus] = useState(order.status);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   const handleSave = async () => {
     setSaving(true);
-    setError("");
+    setErrorDetails(null);
     try {
       await adminApi.updateOrderStatus(order.id, status, note || undefined);
       onUpdated();
       onClose();
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setError(e.response?.data?.message || "Failed to update status");
+      const details = getApiErrorDetails(err, "Failed to update status");
+      setErrorDetails(details);
+      showApiErrorToast(err, "Failed to update status");
     } finally {
       setSaving(false);
     }
@@ -73,11 +75,10 @@ function StatusModal({ order, onClose, onUpdated }: StatusModalProps) {
           {order.receiver_name}
         </div>
 
-        {error && (
-          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-            {error}
-          </div>
-        )}
+        <FormErrorAlert
+          message={errorDetails?.message}
+          items={errorDetails?.items}
+        />
 
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">New Status</label>
@@ -126,6 +127,7 @@ export default function OrdersPage() {
       setOrders(res.data || []);
     } catch (err) {
       console.error("Failed to fetch orders:", err);
+      showApiErrorToast(err, "Failed to load orders");
     } finally {
       setLoading(false);
     }

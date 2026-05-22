@@ -4,8 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, FormErrorAlert } from "@/components/ui";
 import { authApi } from "@/lib/api/auth";
+import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 import { useAuthStore } from "@/lib/store/authStore";
 
 export default function SignupPage() {
@@ -21,52 +22,57 @@ export default function SignupPage() {
     default_address: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setError("");
+    setErrorDetails(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setErrorDetails(null);
 
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+      setErrorDetails({ message: "Passwords do not match" });
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setErrorDetails({ message: "Password must be at least 6 characters" });
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Prepare signup data (exclude confirmPassword)
+      // Prepare signup data (exclude confirmPassword and blank optional address)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirmPassword, ...signupData } = formData;
-      
-      const response = await authApi.signup(signupData);
+      const { confirmPassword, default_address, ...signupData } = formData;
+      const payload = {
+        ...signupData,
+        ...(default_address.trim() ? { default_address: default_address.trim() } : {}),
+      };
+
+      const response = await authApi.signup(payload);
       
       if (response.success) {
         setAuth(response.data.user);
 
         router.push("/dashboard/verify-email");
       } else {
-        setError(response.message || "Signup failed");
+        setErrorDetails({
+          message: response.message || "Signup failed",
+        });
       }
     } catch (err) {
       console.error("Signup error:", err);
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(
-        error.response?.data?.message || "Failed to create account. Please try again."
+      setErrorDetails(
+        getApiErrorDetails(err, "Failed to create account. Please try again.")
       );
     } finally {
       setIsLoading(false);
@@ -113,11 +119,10 @@ export default function SignupPage() {
             </p>
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-              {error}
-            </div>
-          )}
+          <FormErrorAlert
+            message={errorDetails?.message}
+            items={errorDetails?.items}
+          />
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input

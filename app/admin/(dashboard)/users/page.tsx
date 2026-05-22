@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { adminApi } from "@/lib/api/admin";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, FormErrorAlert } from "@/components/ui";
+import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 import { useAdminAuthStore } from "@/lib/store/adminAuthStore";
 
 interface FormData {
@@ -28,7 +29,7 @@ export default function CreateAdminUserPage() {
     role: "staff",
   });
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
   const [created, setCreated] = useState<CreatedUser | null>(null);
 
   const isAdmin = currentUser?.role === "admin";
@@ -37,25 +38,25 @@ export default function CreateAdminUserPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setError("");
+    setErrorDetails(null);
     setCreated(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setErrorDetails(null);
     setCreated(null);
 
     if (!form.name.trim() || form.name.trim().length < 2) {
-      setError("Name must be at least 2 characters");
+      setErrorDetails({ message: "Name must be at least 2 characters" });
       return;
     }
     if (!form.email.includes("@")) {
-      setError("Enter a valid email address");
+      setErrorDetails({ message: "Enter a valid email address" });
       return;
     }
     if (form.password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setErrorDetails({ message: "Password must be at least 6 characters" });
       return;
     }
 
@@ -65,8 +66,7 @@ export default function CreateAdminUserPage() {
       setCreated(res.data);
       setForm({ name: "", email: "", password: "", role: "staff" });
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setError(e.response?.data?.message || "Failed to create user");
+      setErrorDetails(getApiErrorDetails(err, "Failed to create user"));
     } finally {
       setSaving(false);
     }
@@ -94,11 +94,10 @@ export default function CreateAdminUserPage() {
         </p>
       </div>
 
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-          {error}
-        </div>
-      )}
+      <FormErrorAlert
+        message={errorDetails?.message}
+        items={errorDetails?.items}
+      />
 
       {created && (
         <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl space-y-1">

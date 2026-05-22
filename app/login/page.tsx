@@ -4,8 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, FormErrorAlert } from "@/components/ui";
 import { authApi } from "@/lib/api/auth";
+import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 import { useAuthStore } from "@/lib/store/authStore";
 
 export default function LoginPage() {
@@ -17,19 +18,19 @@ export default function LoginPage() {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setError("");
+    setErrorDetails(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setErrorDetails(null);
     setIsLoading(true);
 
     try {
@@ -42,26 +43,12 @@ export default function LoginPage() {
         // Redirect to dashboard
         router.push("/dashboard");
       } else {
-        setError(response.message || "Login failed");
+        setErrorDetails({ message: response.message || "Login failed" });
       }
     } catch (err) {
       console.error("Login error:", err);
-      const axiosErr = err as {
-        response?: { status?: number; data?: { message?: string; code?: string } };
-      };
-      if (
-        axiosErr.response?.status === 403 &&
-        axiosErr.response?.data?.code === "EMAIL_NOT_VERIFIED"
-      ) {
-        setError(
-          axiosErr.response.data.message ||
-            "Please verify your email before signing in."
-        );
-        return;
-      }
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(
-        error.response?.data?.message || "Invalid email or password"
+      setErrorDetails(
+        getApiErrorDetails(err, "Invalid email or password")
       );
     } finally {
       setIsLoading(false);
@@ -108,11 +95,10 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-              {error}
-            </div>
-          )}
+          <FormErrorAlert
+            message={errorDetails?.message}
+            items={errorDetails?.items}
+          />
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input

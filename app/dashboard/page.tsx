@@ -10,6 +10,7 @@ import { ordersApi } from "@/lib/api/orders";
 import { cn } from "@/lib/utils";
 import type { Order } from "@/types";
 import { Package, Layers } from "lucide-react";
+import { getApiErrorMessage, showApiErrorToast } from "@/lib/errors/apiError";
 
 const primaryLinkClass =
   "inline-flex items-center justify-center font-medium transition-all duration-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 bg-primary text-primary-foreground hover:brightness-110 focus:ring-primary shadow-md px-6 py-3 text-base";
@@ -29,8 +30,9 @@ export default function DashboardOverviewPage() {
       }
     } catch (err) {
       console.error("Fetch orders error:", err);
-      const e = err as { response?: { data?: { message?: string } } };
-      setError(e.response?.data?.message || "Failed to load orders");
+      const msg = getApiErrorMessage(err, "Failed to load orders");
+      setError(msg);
+      showApiErrorToast(err, "Failed to load orders");
     } finally {
       setIsLoading(false);
     }

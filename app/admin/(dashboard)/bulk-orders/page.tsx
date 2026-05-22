@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { adminApi } from "@/lib/api/admin";
-import { Badge, Button, Input } from "@/components/ui";
+import { Badge, Button, Input, FormErrorAlert } from "@/components/ui";
+import { getApiErrorDetails, showApiErrorToast, type ParsedApiError } from "@/lib/errors/apiError";
 import type { BulkOrder, BulkOrderDetail, BulkOrderItem } from "@/types";
 
 const ITEM_STATUSES = ["Pending", "Picked Up", "In Transit", "Out for Delivery", "Delivered"] as const;
@@ -30,7 +31,7 @@ interface ItemStatusModalProps {
 function ItemStatusModal({ bulkId, item, onClose, onUpdated }: ItemStatusModalProps) {
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   // Compute the only valid next status
   const nextStatusMap: Record<string, string | null> = {
@@ -45,14 +46,15 @@ function ItemStatusModal({ bulkId, item, onClose, onUpdated }: ItemStatusModalPr
   const handleSave = async () => {
     if (!nextStatus) return;
     setSaving(true);
-    setError("");
+    setErrorDetails(null);
     try {
       await adminApi.updateBulkItemStatus(bulkId, item.id, nextStatus, note || undefined);
       onUpdated();
       onClose();
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setError(e.response?.data?.message || "Failed to update status");
+      const details = getApiErrorDetails(err, "Failed to update status");
+      setErrorDetails(details);
+      showApiErrorToast(err, "Failed to update status");
     } finally {
       setSaving(false);
     }
@@ -81,11 +83,10 @@ function ItemStatusModal({ bulkId, item, onClose, onUpdated }: ItemStatusModalPr
           <p className="text-sm text-muted-foreground">This item has already been delivered.</p>
         )}
 
-        {error && (
-          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-            {error}
-          </div>
-        )}
+        <FormErrorAlert
+          message={errorDetails?.message}
+          items={errorDetails?.items}
+        />
 
         {nextStatus && (
           <Input
@@ -263,6 +264,7 @@ export default function BulkOrdersPage() {
       setBulkOrders(res.data || []);
     } catch (err) {
       console.error("Failed to fetch bulk orders:", err);
+      showApiErrorToast(err, "Failed to load bulk orders");
     } finally {
       setLoading(false);
     }
@@ -279,6 +281,7 @@ export default function BulkOrdersPage() {
       setSelectedBulk(res.data);
     } catch (err) {
       console.error("Failed to load bulk order detail:", err);
+      showApiErrorToast(err, "Failed to load bulk order details");
     } finally {
       setLoadingDetail(false);
     }

@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { adminApi } from "@/lib/api/admin";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, FormErrorAlert } from "@/components/ui";
+import { getApiErrorDetails, showApiErrorToast, type ParsedApiError } from "@/lib/errors/apiError";
 
 const SETTING_FIELDS = [
   { key: "company_name", label: "Company Name", placeholder: "Meenarh Logistics" },
@@ -18,14 +19,16 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   const fetchSettings = useCallback(async () => {
     try {
       const res = await adminApi.getSettings();
       setSettings(res.data || {});
-    } catch {
-      setError("Failed to load settings");
+    } catch (err) {
+      const details = getApiErrorDetails(err, "Failed to load settings");
+      setErrorDetails(details);
+      showApiErrorToast(err, "Failed to load settings");
     } finally {
       setLoading(false);
     }
@@ -38,18 +41,20 @@ export default function SettingsPage() {
   const handleChange = (key: string, value: string) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
     setSuccess("");
-    setError("");
+    setErrorDetails(null);
   };
 
   const handleSave = async () => {
     setSaving(true);
-    setError("");
+    setErrorDetails(null);
     setSuccess("");
     try {
       await adminApi.updateSettings(settings);
       setSuccess("Settings saved successfully");
-    } catch {
-      setError("Failed to save settings");
+    } catch (err) {
+      const details = getApiErrorDetails(err, "Failed to save settings");
+      setErrorDetails(details);
+      showApiErrorToast(err, "Failed to save settings");
     } finally {
       setSaving(false);
     }
@@ -70,11 +75,10 @@ export default function SettingsPage() {
         <p className="text-muted-foreground text-sm mt-1">Manage your company contact details and information</p>
       </div>
 
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-          {error}
-        </div>
-      )}
+      <FormErrorAlert
+        message={errorDetails?.message}
+        items={errorDetails?.items}
+      />
       {success && (
         <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-primary text-sm">
           {success}

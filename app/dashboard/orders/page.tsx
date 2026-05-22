@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { OrderList } from "@/components/dashboard/OrderList";
 import { ordersApi } from "@/lib/api/orders";
 import type { Order, BulkOrder, OrderHistoryEntry } from "@/types";
+import { getApiErrorMessage, showApiErrorToast } from "@/lib/errors/apiError";
 
 type OrderTab = "single" | "bulk";
 
@@ -26,8 +27,9 @@ export default function OrdersPage() {
       }
     } catch (err) {
       console.error("Fetch orders error:", err);
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || "Failed to load orders");
+      const msg = getApiErrorMessage(err, "Failed to load orders");
+      setError(msg);
+      showApiErrorToast(err, "Failed to load orders");
     } finally {
       setIsLoading(false);
     }

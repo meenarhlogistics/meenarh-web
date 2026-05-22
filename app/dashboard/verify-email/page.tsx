@@ -3,8 +3,9 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Card } from "@/components/ui";
+import { Button, Card, FormErrorAlert } from "@/components/ui";
 import { authApi } from "@/lib/api/auth";
+import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 import { useAuthStore } from "@/lib/store/authStore";
 
 function VerifyEmailInner() {
@@ -16,7 +17,7 @@ function VerifyEmailInner() {
   const loadAuth = useAuthStore((s) => s.loadAuth);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
   const [info, setInfo] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -39,7 +40,7 @@ function VerifyEmailInner() {
   }, [status, loadAuth, router]);
 
   const resend = async () => {
-    setError("");
+    setErrorDetails(null);
     setInfo("");
     setSending(true);
     try {
@@ -47,11 +48,10 @@ function VerifyEmailInner() {
       if (res.success) {
         setInfo("Verification email sent. Check your inbox.");
       } else {
-        setError(res.message || "Could not send email.");
+        setErrorDetails({ message: res.message || "Could not send email." });
       }
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setError(e.response?.data?.message || "Could not send email.");
+      setErrorDetails(getApiErrorDetails(err, "Could not send email."));
     } finally {
       setSending(false);
     }
@@ -92,15 +92,14 @@ function VerifyEmailInner() {
         </div>
       )}
 
-      {(error || info) && (
-        <div
-          className={`p-4 rounded-lg text-sm border ${
-            error
-              ? "bg-destructive/10 border-destructive/20 text-destructive"
-              : "bg-primary/10 border-primary/20 text-primary"
-          }`}
-        >
-          {error || info}
+      <FormErrorAlert
+        message={errorDetails?.message}
+        items={errorDetails?.items}
+      />
+
+      {info && (
+        <div className="p-4 rounded-lg text-sm border bg-primary/10 border-primary/20 text-primary">
+          {info}
         </div>
       )}
 

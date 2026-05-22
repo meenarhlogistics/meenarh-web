@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Input } from "@/components/ui";
+import { Button, Card, Input, FormErrorAlert } from "@/components/ui";
 import { authApi } from "@/lib/api/auth";
+import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 import { useAuthStore } from "@/lib/store/authStore";
 
 function formatSeconds(s: number) {
@@ -20,7 +21,7 @@ export default function VerifyPhonePage() {
 
   const [code, setCode] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "verifying">("idle");
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
   const [info, setInfo] = useState("");
   const [cooldown, setCooldown] = useState(0);
 
@@ -50,7 +51,7 @@ export default function VerifyPhonePage() {
   }, [cooldown]);
 
   const requestCode = async () => {
-    setError("");
+    setErrorDetails(null);
     setInfo("");
     setStatus("sending");
     try {
@@ -59,11 +60,14 @@ export default function VerifyPhonePage() {
         setInfo("Verification code sent on WhatsApp.");
         setCooldown(30);
       } else {
-        setError(res.message || "Could not send code. Please try again.");
+        setErrorDetails({
+          message: res.message || "Could not send code. Please try again.",
+        });
       }
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setError(e.response?.data?.message || "Could not send code. Please try again.");
+      setErrorDetails(
+        getApiErrorDetails(err, "Could not send code. Please try again.")
+      );
     } finally {
       setStatus("idle");
     }
@@ -71,27 +75,27 @@ export default function VerifyPhonePage() {
 
   const verify = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    setError("");
+    setErrorDetails(null);
     setInfo("");
     const normalized = code.replace(/\s/g, "");
     if (!/^\d{6}$/.test(normalized)) {
-      setError("Enter the 6-digit code sent to your WhatsApp.");
+      setErrorDetails({
+        message: "Enter the 6-digit code sent to your WhatsApp.",
+      });
       return;
     }
     setStatus("verifying");
     try {
       const res = await authApi.verifyPhoneCode(normalized);
       if (!res.success) {
-        setError(res.message || "Invalid verification code.");
+        setErrorDetails({ message: res.message || "Invalid verification code." });
         return;
       }
       // Refresh auth so the dashboard reflects is_phone_verified immediately
       await loadAuth();
       router.replace("/dashboard");
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string; reason?: string } } };
-      const msg = e.response?.data?.message || "Invalid verification code.";
-      setError(msg);
+      setErrorDetails(getApiErrorDetails(err, "Invalid verification code."));
     } finally {
       setStatus("idle");
     }
@@ -116,15 +120,14 @@ export default function VerifyPhonePage() {
         </p>
       </div>
 
-      {(error || info) && (
-        <div
-          className={`p-4 rounded-lg text-sm border ${
-            error
-              ? "bg-destructive/10 border-destructive/20 text-destructive"
-              : "bg-primary/10 border-primary/20 text-primary"
-          }`}
-        >
-          {error || info}
+      <FormErrorAlert
+        message={errorDetails?.message}
+        items={errorDetails?.items}
+      />
+
+      {info && (
+        <div className="p-4 rounded-lg text-sm border bg-primary/10 border-primary/20 text-primary">
+          {info}
         </div>
       )}
 
@@ -164,7 +167,7 @@ export default function VerifyPhonePage() {
             value={code}
             onChange={(e) => {
               setCode(e.target.value.replace(/[^\d\s]/g, ""));
-              setError("");
+              setErrorDetails(null);
             }}
             id="verification-code"
           />

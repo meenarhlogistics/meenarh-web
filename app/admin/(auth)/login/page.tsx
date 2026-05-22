@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, FormErrorAlert } from "@/components/ui";
 import { adminApi } from "@/lib/api/admin";
+import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 import { useAdminAuthStore } from "@/lib/store/adminAuthStore";
 
 export default function AdminLoginPage() {
@@ -13,7 +14,7 @@ export default function AdminLoginPage() {
   const { setAuth, isAuthenticated, loadAuth } = useAdminAuthStore();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   useEffect(() => {
     loadAuth();
@@ -27,12 +28,12 @@ export default function AdminLoginPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError("");
+    setErrorDetails(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setErrorDetails(null);
     setIsLoading(true);
 
     try {
@@ -41,11 +42,10 @@ export default function AdminLoginPage() {
         setAuth(response.data.user);
         router.push("/admin");
       } else {
-        setError(response.message || "Login failed");
+        setErrorDetails({ message: response.message || "Login failed" });
       }
     } catch (err) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || "Invalid email or password");
+      setErrorDetails(getApiErrorDetails(err, "Invalid email or password"));
     } finally {
       setIsLoading(false);
     }
@@ -70,11 +70,10 @@ export default function AdminLoginPage() {
             <p className="text-muted-foreground">Sign in to the admin panel</p>
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-              {error}
-            </div>
-          )}
+          <FormErrorAlert
+            message={errorDetails?.message}
+            items={errorDetails?.items}
+          />
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input

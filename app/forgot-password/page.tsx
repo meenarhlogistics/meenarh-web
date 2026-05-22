@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, FormErrorAlert } from "@/components/ui";
 import apiClient from "@/lib/api/client";
 
 const PASSWORD_RESET_PHONE_KEY = "password_reset_phone";
@@ -80,11 +80,7 @@ export default function ForgotPasswordPage() {
             </p>
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-              {error}
-            </div>
-          )}
+          <FormErrorAlert message={error || undefined} />
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input

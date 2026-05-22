@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { CartEntry, CartItem, CreateBulkOrderRequest } from '@/types';
 import { cartApi } from '@/lib/api/cart';
+import { getApiErrorMessage, showApiErrorToast } from '@/lib/errors/apiError';
+
+function handleCartError(error: unknown, fallback: string): string {
+  const message = getApiErrorMessage(error, fallback);
+  showApiErrorToast(error, fallback);
+  return message;
+}
 
 interface CartStore {
   items: CartEntry[];
@@ -35,8 +42,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
       // Fetch updated cart
       await get().fetchCart();
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      set({ error: err.response?.data?.message || 'Failed to add item to cart' });
+      set({ error: handleCartError(error, 'Failed to add item to cart') });
       throw error;
     } finally {
       set({ isLoading: false });
@@ -49,8 +55,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
       await cartApi.addBulkToCart(entry);
       await get().fetchCart();
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      set({ error: err.response?.data?.message || 'Failed to add bulk delivery to cart' });
+      set({ error: handleCartError(error, 'Failed to add bulk delivery to cart') });
       throw error;
     } finally {
       set({ isLoading: false });
@@ -65,8 +70,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
       // Fetch updated cart
       await get().fetchCart();
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      set({ error: err.response?.data?.message || 'Failed to update item' });
+      set({ error: handleCartError(error, 'Failed to update item') });
       throw error;
     } finally {
       set({ isLoading: false });
@@ -79,8 +83,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
       await cartApi.updateBulkCartEntry(id, data);
       await get().fetchCart();
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      set({ error: err.response?.data?.message || 'Failed to update bulk delivery' });
+      set({ error: handleCartError(error, 'Failed to update bulk delivery') });
       throw error;
     } finally {
       set({ isLoading: false });
@@ -97,8 +100,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
         items: state.items.filter((item) => !(item.kind === 'single' && item.id === id)),
       }));
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      set({ error: err.response?.data?.message || 'Failed to remove item' });
+      set({ error: handleCartError(error, 'Failed to remove item') });
       throw error;
     } finally {
       set({ isLoading: false });
@@ -113,8 +115,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
         items: state.items.filter((item) => !(item.kind === 'bulk' && item.id === id)),
       }));
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      set({ error: err.response?.data?.message || 'Failed to remove bulk delivery' });
+      set({ error: handleCartError(error, 'Failed to remove bulk delivery') });
       throw error;
     } finally {
       set({ isLoading: false });
@@ -127,8 +128,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
       await cartApi.clearCart();
       set({ items: [] });
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      set({ error: err.response?.data?.message || 'Failed to clear cart' });
+      set({ error: handleCartError(error, 'Failed to clear cart') });
       throw error;
     } finally {
       set({ isLoading: false });
@@ -141,8 +141,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
       const response = await cartApi.getCart();
       set({ items: response.data });
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      set({ error: err.response?.data?.message || 'Failed to fetch cart' });
+      const message = getApiErrorMessage(error, 'Failed to fetch cart');
+      set({ error: message });
+      showApiErrorToast(error, 'Failed to fetch cart');
     } finally {
       set({ isLoading: false });
     }
@@ -158,8 +159,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
       
       return response.data;
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      set({ error: err.response?.data?.message || 'Failed to checkout' });
+      set({ error: handleCartError(error, 'Failed to checkout') });
       throw error;
     } finally {
       set({ isLoading: false });

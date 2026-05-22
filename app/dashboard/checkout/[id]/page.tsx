@@ -7,6 +7,7 @@ import { useCartStore } from "@/lib/store/cartStore";
 import { useAuthStore } from "@/lib/store/authStore";
 import apiClient from "@/lib/api/client";
 import { paymentsApi } from "@/lib/api/payments";
+import { getApiErrorMessage, showApiErrorToast } from "@/lib/errors/apiError";
 import type { CartItem } from "@/types";
 
 export default function SingleItemCheckoutPage() {
@@ -51,10 +52,9 @@ export default function SingleItemCheckoutPage() {
       });
       setPromoResult(res.data.data);
     } catch (err) {
-      const e = err as { response?: { data?: { data?: { message?: string } } } };
       setPromoResult({
         valid: false,
-        message: e.response?.data?.data?.message || "Invalid promo code",
+        message: getApiErrorMessage(err, "Invalid promo code"),
       });
     } finally {
       setPromoValidating(false);
@@ -93,10 +93,12 @@ export default function SingleItemCheckoutPage() {
       window.location.href = url;
     } catch (err) {
       console.error("Checkout error:", err);
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(
-        error.response?.data?.message || "Failed to process payment. Please try again."
+      const msg = getApiErrorMessage(
+        err,
+        "Failed to process payment. Please try again."
       );
+      setError(msg);
+      showApiErrorToast(err, "Failed to process payment. Please try again.");
     } finally {
       setIsProcessing(false);
     }

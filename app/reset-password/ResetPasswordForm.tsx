@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, FormErrorAlert } from "@/components/ui";
 import apiClient from "@/lib/api/client";
+import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 
 const PASSWORD_RESET_PHONE_KEY = "password_reset_phone";
 
@@ -17,7 +18,7 @@ export function ResetPasswordForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   useEffect(() => {
     try {
@@ -30,27 +31,27 @@ export function ResetPasswordForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setErrorDetails(null);
     setMessage("");
 
     if (!phone.trim()) {
-      setError("Enter the phone number you used when requesting the code.");
+      setErrorDetails({ message: "Enter the phone number you used when requesting the code." });
       return;
     }
 
     const normalizedCode = code.replace(/\s/g, "");
     if (!/^\d{6}$/.test(normalizedCode)) {
-      setError("Enter the 6-digit code sent to your WhatsApp.");
+      setErrorDetails({ message: "Enter the 6-digit code sent to your WhatsApp." });
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setErrorDetails({ message: "Passwords do not match" });
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setErrorDetails({ message: "Password must be at least 6 characters" });
       return;
     }
 
@@ -74,14 +75,17 @@ export function ResetPasswordForm() {
           router.push("/login");
         }, 2000);
       } else {
-        setError(response.data?.message || "Failed to reset password");
+        setErrorDetails({
+          message: response.data?.message || "Failed to reset password",
+        });
       }
     } catch (err: unknown) {
       console.error("Reset password error:", err);
-      const errObj = err as { response?: { data?: { message?: string } } };
-      setError(
-        errObj.response?.data?.message ||
+      setErrorDetails(
+        getApiErrorDetails(
+          err,
           "Invalid or expired code. Request a new code from Forgot password."
+        )
       );
     } finally {
       setIsLoading(false);
@@ -125,11 +129,10 @@ export function ResetPasswordForm() {
             </p>
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-              {error}
-            </div>
-          )}
+          <FormErrorAlert
+            message={errorDetails?.message}
+            items={errorDetails?.items}
+          />
 
           {message && (
             <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-500 text-sm">

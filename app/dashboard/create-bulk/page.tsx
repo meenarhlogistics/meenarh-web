@@ -14,6 +14,7 @@ import { Button, Input, Textarea, Toggle } from "@/components/ui";
 import { ChevronDown } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useCartStore } from "@/lib/store/cartStore";
+import { getApiErrorMessage } from "@/lib/errors/apiError";
 
 function newLineId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -697,12 +698,9 @@ export default function CreateBulkOrderPage() {
       });
       router.push("/dashboard/create?step=review");
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string; errors?: string[] } } };
-      const msg =
-        e.response?.data?.errors?.join(", ") ||
-        e.response?.data?.message ||
-        "Failed to add bulk delivery to cart. Please try again.";
-      setSubmitError(msg);
+      setSubmitError(
+        getApiErrorMessage(err, "Failed to add bulk delivery to cart. Please try again.")
+      );
       setSubmitting(false);
     }
   };

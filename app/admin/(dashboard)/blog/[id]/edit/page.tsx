@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, FormErrorAlert } from "@/components/ui";
+import { getApiErrorDetails, showApiErrorToast, type ParsedApiError } from "@/lib/errors/apiError";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { adminApi } from "@/lib/api/admin";
 
@@ -17,7 +18,7 @@ export default function EditBlogPostPage() {
   const [status, setStatus] = useState<"draft" | "published">("draft");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   const fetchPost = useCallback(async () => {
     try {
@@ -27,8 +28,10 @@ export default function EditBlogPostPage() {
       setContent(post.content);
       setCoverUrl(post.cover_image_url || "");
       setStatus(post.status);
-    } catch {
-      setError("Failed to load post");
+    } catch (err) {
+      const msg = getApiErrorDetails(err, "Failed to load post");
+      setErrorDetails(msg);
+      showApiErrorToast(err, "Failed to load post");
     } finally {
       setLoading(false);
     }
@@ -39,7 +42,7 @@ export default function EditBlogPostPage() {
   }, [fetchPost]);
 
   const handleSave = async (newStatus?: "draft" | "published") => {
-    setError("");
+    setErrorDetails(null);
     setSaving(true);
     try {
       await adminApi.updateBlogPost(postId, {
@@ -50,8 +53,7 @@ export default function EditBlogPostPage() {
       });
       router.push("/admin/blog");
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setError(e.response?.data?.message || "Failed to update post");
+      setErrorDetails(getApiErrorDetails(err, "Failed to update post"));
     } finally {
       setSaving(false);
     }
@@ -90,11 +92,10 @@ export default function EditBlogPostPage() {
         </div>
       </div>
 
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-          {error}
-        </div>
-      )}
+      <FormErrorAlert
+        message={errorDetails?.message}
+        items={errorDetails?.items}
+      />
 
       <Input
         label="Title"

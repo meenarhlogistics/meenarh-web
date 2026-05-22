@@ -9,3 +9,4 @@ export { Toggle } from "./Toggle";
 export { Badge } from "./Badge";
 export { RevealOnScroll } from "./RevealOnScroll";
 export type { AnimVariant } from "./RevealOnScroll";
+export { FormErrorAlert } from "./FormErrorAlert";

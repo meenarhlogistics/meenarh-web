@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Button, Input, Select, Textarea, Card, Toggle } from "@/components/ui";
+import { Button, Input, Select, Textarea, Card, Toggle, FormErrorAlert } from "@/components/ui";
+import { getApiErrorMessage, showApiErrorToast } from "@/lib/errors/apiError";
 import { OrderStepper } from "./OrderStepper";
 import { CartSummary } from "./CartSummary";
 import { PaymentStep } from "./PaymentStep";
@@ -87,8 +88,12 @@ export function CreateOrderForm() {
       .then((data) => {
         if (!cancelled) setPickups(data);
       })
-      .catch(() => {
-        if (!cancelled) setError("Could not load pickup areas. Please refresh.");
+      .catch((err) => {
+        if (!cancelled) {
+          const msg = getApiErrorMessage(err, "Could not load pickup areas. Please refresh.");
+          setError(msg);
+          showApiErrorToast(err, "Could not load pickup areas. Please refresh.");
+        }
       })
       .finally(() => {
         if (!cancelled) setPickupsLoading(false);
@@ -301,10 +306,7 @@ export function CreateOrderForm() {
       }));
     } catch (err) {
       console.error("Add to cart error:", err);
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(
-        error.response?.data?.message || "Failed to add to cart. Please try again."
-      );
+      setError(getApiErrorMessage(err, "Failed to add to cart. Please try again."));
     } finally {
       setIsLoading(false);
     }
@@ -349,10 +351,8 @@ export function CreateOrderForm() {
       setCurrentStep(2);
     } catch (err) {
       console.error("Continue to review error:", err);
-      const error = err as { response?: { data?: { message?: string } } };
       setError(
-        error.response?.data?.message ||
-          "Failed to proceed to review. Please try again."
+        getApiErrorMessage(err, "Failed to proceed to review. Please try again.")
       );
     } finally {
       setIsLoading(false);
@@ -380,11 +380,7 @@ export function CreateOrderForm() {
           </div>
         )}
 
-        {error && (
-          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-            {error}
-          </div>
-        )}
+        <FormErrorAlert message={error || undefined} />
 
         <form onSubmit={handleAddToCart} className="space-y-6">
           {/* Sender Information */}
