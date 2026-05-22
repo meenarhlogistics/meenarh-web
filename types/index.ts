@@ -5,7 +5,6 @@ export interface User {
   email: string;
   phone?: string;
   default_address?: string;
-  is_phone_verified?: boolean;
   is_email_verified?: boolean;
   /** When false, backend skips mandatory verification (local dev without Resend). Omitted/truthy = enforced. */
   email_verification_enforced?: boolean;

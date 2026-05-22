@@ -7,11 +7,11 @@ import { useRouter } from "next/navigation";
 import { Button, Input, FormErrorAlert } from "@/components/ui";
 import apiClient from "@/lib/api/client";
 
-const PASSWORD_RESET_PHONE_KEY = "password_reset_phone";
+const PASSWORD_RESET_EMAIL_KEY = "password_reset_email";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -19,22 +19,22 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setError("");
 
-    if (!phone) {
-      setError("Phone is required");
+    if (!email) {
+      setError("Email is required");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      await apiClient.post("/auth/forgot-password", { phone });
+      await apiClient.post("/auth/forgot-password", { email: email.trim() });
     } catch (err) {
       console.error("Forgot password error:", err);
-      // Same opaque UX as backend: proceed to reset screen with phone prefilled.
+      // Same opaque UX as backend: proceed to reset screen with email prefilled.
     }
 
     try {
-      sessionStorage.setItem(PASSWORD_RESET_PHONE_KEY, phone.trim());
+      sessionStorage.setItem(PASSWORD_RESET_EMAIL_KEY, email.trim());
     } catch {
       // ignore quota / privacy mode
     }
@@ -75,8 +75,8 @@ export default function ForgotPasswordPage() {
               Forgot password
             </h1>
             <p className="text-muted-foreground">
-              Enter the phone number linked to your account. We&apos;ll send a
-              verification code to your WhatsApp so you can set a new password.
+              Enter the email linked to your account. We&apos;ll send a
+              verification code so you can set a new password.
             </p>
           </div>
 
@@ -84,14 +84,14 @@ export default function ForgotPasswordPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              type="tel"
-              label="Phone (WhatsApp)"
-              name="phone"
-              placeholder="+2348012345678"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              type="email"
+              label="Email"
+              name="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              id="phone"
+              id="email"
             />
 
             <Button

@@ -9,6 +9,9 @@ import { authApi } from "@/lib/api/auth";
 import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 import { useAuthStore } from "@/lib/store/authStore";
 
+export const dynamic = 'force-dynamic';
+
+
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);

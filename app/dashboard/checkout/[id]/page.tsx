@@ -73,8 +73,8 @@ export default function SingleItemCheckoutPage() {
     }
 
     setError("");
-    if (!user?.is_phone_verified) {
-      router.push("/dashboard/verify-phone");
+    if (!user?.is_email_verified) {
+      router.push("/dashboard/verify-email");
       return;
     }
     setIsProcessing(true);

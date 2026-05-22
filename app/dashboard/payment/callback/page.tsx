@@ -15,7 +15,6 @@ function CallbackContent() {
   const searchParams = useSearchParams();
   const fetchCart = useCartStore((s) => s.fetchCart);
   const [error, setError] = useState("");
-  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState<SuccessData | null>(null);
 
@@ -45,13 +44,12 @@ function CallbackContent() {
           err,
           "Could not verify payment. If you were charged, contact support with your reference."
         );
-        if (msg === "PHONE_NOT_VERIFIED") {
-          setErrorCode("PHONE_NOT_VERIFIED");
-          setError("Verify your phone number before orders can be created.");
-        } else {
-          setErrorCode(null);
-          setError(msg);
+        if (msg === "EMAIL_NOT_VERIFIED") {
+          setError("Verify your email before orders can be created.");
+          router.push("/dashboard/verify-email");
+          return;
         }
+        setError(msg);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -78,15 +76,9 @@ function CallbackContent() {
           <h1 className="text-2xl font-semibold text-foreground">Payment verification</h1>
           <p className="text-destructive text-sm">{error}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            {errorCode === "PHONE_NOT_VERIFIED" ? (
-              <Button variant="primary" onClick={() => router.push("/dashboard/verify-phone")}>
-                Verify phone
-              </Button>
-            ) : (
-              <Button variant="secondary" onClick={() => router.push("/dashboard/cart")}>
-                Back to checkout
-              </Button>
-            )}
+            <Button variant="secondary" onClick={() => router.push("/dashboard/cart")}>
+              Back to checkout
+            </Button>
             <Button variant="primary" onClick={() => router.push("/dashboard")}>
               Dashboard
             </Button>

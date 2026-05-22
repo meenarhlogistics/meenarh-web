@@ -149,7 +149,7 @@ export default function SignupPage() {
 
             <Input
               type="tel"
-              label="Phone (WhatsApp)"
+              label="Phone"
               name="phone"
               placeholder="+2348012345678"
               value={formData.phone}

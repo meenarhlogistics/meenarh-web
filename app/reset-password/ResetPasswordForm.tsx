@@ -8,11 +8,11 @@ import { Button, Input, FormErrorAlert } from "@/components/ui";
 import apiClient from "@/lib/api/client";
 import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 
-const PASSWORD_RESET_PHONE_KEY = "password_reset_phone";
+const PASSWORD_RESET_EMAIL_KEY = "password_reset_email";
 
 export function ResetPasswordForm() {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -22,8 +22,8 @@ export function ResetPasswordForm() {
 
   useEffect(() => {
     try {
-      const stored = sessionStorage.getItem(PASSWORD_RESET_PHONE_KEY);
-      if (stored) setPhone(stored);
+      const stored = sessionStorage.getItem(PASSWORD_RESET_EMAIL_KEY);
+      if (stored) setEmail(stored);
     } catch {
       // ignore
     }
@@ -34,14 +34,14 @@ export function ResetPasswordForm() {
     setErrorDetails(null);
     setMessage("");
 
-    if (!phone.trim()) {
-      setErrorDetails({ message: "Enter the phone number you used when requesting the code." });
+    if (!email.trim()) {
+      setErrorDetails({ message: "Enter the email you used when requesting the code." });
       return;
     }
 
     const normalizedCode = code.replace(/\s/g, "");
     if (!/^\d{6}$/.test(normalizedCode)) {
-      setErrorDetails({ message: "Enter the 6-digit code sent to your WhatsApp." });
+      setErrorDetails({ message: "Enter the 6-digit code sent to your email." });
       return;
     }
 
@@ -59,14 +59,14 @@ export function ResetPasswordForm() {
 
     try {
       const response = await apiClient.post("/auth/reset-password", {
-        phone: phone.trim(),
+        email: email.trim(),
         code: normalizedCode,
         newPassword: password,
       });
 
       if (response.data?.success) {
         try {
-          sessionStorage.removeItem(PASSWORD_RESET_PHONE_KEY);
+          sessionStorage.removeItem(PASSWORD_RESET_EMAIL_KEY);
         } catch {
           // ignore
         }
@@ -125,7 +125,7 @@ export function ResetPasswordForm() {
               Reset password
             </h1>
             <p className="text-muted-foreground">
-              Enter the code from WhatsApp and choose a new password.
+              Enter the code from your email and choose a new password.
             </p>
           </div>
 
@@ -142,14 +142,14 @@ export function ResetPasswordForm() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              type="tel"
-              label="Phone (WhatsApp)"
-              name="phone"
-              placeholder="+2348012345678"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              type="email"
+              label="Email"
+              name="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              id="reset-phone"
+              id="reset-email"
             />
 
             <Input

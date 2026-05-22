@@ -4,7 +4,6 @@ import type {
   SignupRequest,
   AuthResponse,
   ProfileResponse,
-  User,
 } from "@/types";
 
 export const authApi = {
@@ -48,22 +47,6 @@ export const authApi = {
     const response = await apiClient.patch<ProfileResponse>(
       "/user/profile",
       userData
-    );
-    return response.data;
-  },
-
-  async requestPhoneVerificationCode(): Promise<{ success: boolean; message: string }> {
-    const response = await apiClient.post<{ success: boolean; message: string }>(
-      "/user/phone-verification/request",
-      {}
-    );
-    return response.data;
-  },
-
-  async verifyPhoneCode(code: string): Promise<{ success: boolean; message: string; data?: User; reason?: string }> {
-    const response = await apiClient.post<{ success: boolean; message: string; data?: User; reason?: string }>(
-      "/user/phone-verification/verify",
-      { code }
     );
     return response.data;
   },

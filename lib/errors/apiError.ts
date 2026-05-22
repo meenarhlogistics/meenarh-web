@@ -91,15 +91,20 @@ export function getApiError(error: unknown, fallback: string): ParsedApiError {
     message = bodyMessage;
   }
 
+  const hasSpecificBackendMessage = Boolean(
+    bodyMessage && !isGenericMessage(bodyMessage)
+  );
   const statusMsg = statusFallback(status);
-  if (statusMsg && (message === fallback || isGenericMessage(message))) {
-    message = statusMsg;
-  } else if (
-    bodyMessage &&
-    !isGenericMessage(bodyMessage) &&
+  // Never replace a concrete API message with a status default (e.g. login 401
+  // returns "Invalid email or password" which must not become "Session expired").
+  if (
+    statusMsg &&
+    !hasSpecificBackendMessage &&
     (message === fallback || isGenericMessage(message))
   ) {
-    message = bodyMessage;
+    message = statusMsg;
+  } else if (hasSpecificBackendMessage) {
+    message = bodyMessage!;
   }
 
   if (!isAxiosError(error) && error instanceof Error && message === fallback && error.message) {
