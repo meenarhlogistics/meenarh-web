@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { FOOTER_LANDING_CONTENT } from "@/lib/constants";
+import Link from "next/link";
+import {
+  COMPANY_CONTACT,
+  FOOTER_LANDING_CONTENT,
+  FOOTER_LINKS,
+  FOOTER_STAFF_LINK,
+  SITE_CONFIG,
+} from "@/lib/constants";
 
 const linkFocus =
   "cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted transition-colors";
@@ -39,11 +46,42 @@ export function Footer({
   const companyName = propName || settings.company_name || "Meenarh Logistics";
   const tagline = propTagline || settings.tagline || "Fast, trackable deliveries across Lagos.";
   const whatsappLink =
-    propWhatsapp || (settings.whatsapp ? `https://wa.me/${settings.whatsapp}` : "https://wa.me/2348000000000");
+    propWhatsapp ||
+    (settings.whatsapp
+      ? `https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`
+      : SITE_CONFIG.whatsappLink);
   const currentYear = new Date().getFullYear();
 
   const { headline, primaryCta, secondaryCta, quickContactLabel, quickContactLinkLabel, socialLabel, socialLinks, privacyHref, attribution } =
     FOOTER_LANDING_CONTENT;
+
+  const sitemapLinks = (
+    <nav aria-label="Site links" className="flex flex-col gap-2">
+      <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
+        Explore
+      </p>
+      <ul className="flex flex-col gap-1 list-none p-0 m-0">
+        {FOOTER_LINKS.map((item) => (
+          <li key={item.href}>
+            <Link
+              href={item.href}
+              className={`text-sm font-medium text-foreground hover:text-primary ${linkFocus} inline-flex min-h-10 items-center`}
+            >
+              {item.label}
+            </Link>
+          </li>
+        ))}
+        <li>
+          <Link
+            href={FOOTER_STAFF_LINK.href}
+            className={`text-sm font-medium text-muted-foreground hover:text-foreground ${linkFocus} inline-flex min-h-10 items-center`}
+          >
+            {FOOTER_STAFF_LINK.label}
+          </Link>
+        </li>
+      </ul>
+    </nav>
+  );
 
   if (variant === "fullPage") {
     return (
@@ -82,6 +120,8 @@ export function Footer({
               </div>
 
               <div className="flex flex-col gap-8 sm:gap-10">
+                {sitemapLinks}
+
                 <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,10rem)_1fr] gap-x-8 gap-y-2 items-start text-left">
                   <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground pt-0.5">
                     {quickContactLabel}
@@ -141,9 +181,9 @@ export function Footer({
 
   return (
     <footer className="bg-muted py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex flex-col items-center md:items-start gap-2">
+      <div className="max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 mb-10">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Image
                 src="/meenarh logo.svg"
@@ -154,10 +194,15 @@ export function Footer({
               />
               <span className="font-semibold text-foreground">{companyName}</span>
             </div>
-            <p className="text-sm text-muted-foreground text-center md:text-left">{tagline}</p>
+            <p className="text-sm text-muted-foreground">{tagline}</p>
           </div>
 
-          <div className="flex flex-col items-center md:items-end gap-3">
+          {sitemapLinks}
+
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              Connect
+            </p>
             <a
               href={whatsappLink}
               target="_blank"
@@ -169,11 +214,19 @@ export function Footer({
               </svg>
               {whatsappLabel}
             </a>
-            <p className="text-xs text-muted-foreground">
-              © {currentYear} {companyName}. All rights reserved.
-            </p>
+            <a
+              href={COMPANY_CONTACT.instagramLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex min-h-11 items-center text-sm font-medium text-foreground hover:text-primary transition-colors ${linkFocus}`}
+            >
+              {COMPANY_CONTACT.instagramLabel}
+            </a>
           </div>
         </div>
+        <p className="text-xs text-muted-foreground text-center sm:text-left border-t border-border/70 pt-6">
+          © {currentYear} {companyName}. All rights reserved.
+        </p>
       </div>
     </footer>
   );

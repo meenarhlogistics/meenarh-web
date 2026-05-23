@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button, Input, Select, Textarea, Card, Toggle, FormErrorAlert } from "@/components/ui";
 import { getApiErrorMessage, showApiErrorToast } from "@/lib/errors/apiError";
@@ -17,6 +17,11 @@ import {
   type DeliveryRegionArea,
   type RegionQuote,
 } from "@/lib/api/regions";
+import {
+  readQuoteDraft,
+  clearQuoteDraft,
+  buildPackageDescription,
+} from "@/lib/quoteDraft";
 
 const STEPS = [
   { id: 1, label: "Delivery Details", description: "Package information" },
@@ -59,6 +64,8 @@ export function CreateOrderForm() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [quoteDraftBanner, setQuoteDraftBanner] = useState(false);
+  const quoteDraftApplied = useRef(false);
 
   // Allow deep-linking into review step (used by cart "Checkout All")
   useEffect(() => {
@@ -79,6 +86,26 @@ export function CreateOrderForm() {
       }));
     }
   }, [user]);
+
+  useEffect(() => {
+    if (quoteDraftApplied.current) return;
+    const draft = readQuoteDraft();
+    if (!draft) return;
+    quoteDraftApplied.current = true;
+
+    setFormData((prev) => ({
+      ...prev,
+      pickup_region_id: draft.pickup_region_id ?? prev.pickup_region_id,
+      delivery_region_id: draft.delivery_region_id ?? prev.delivery_region_id,
+      delivery_region_area_id: draft.delivery_region_area_id ?? prev.delivery_region_area_id,
+      pickup_address: draft.pickup_address?.trim() || prev.pickup_address,
+      delivery_address: draft.delivery_address?.trim() || prev.delivery_address,
+      sender_phone: draft.sender_phone?.trim() || prev.sender_phone,
+      package_description: buildPackageDescription(draft) || prev.package_description,
+    }));
+    setQuoteDraftBanner(true);
+    clearQuoteDraft();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -379,6 +406,12 @@ export function CreateOrderForm() {
             Please verify your email before placing an order. You can build your cart now, but payment requires email verification.
           </div>
         )}
+
+        {quoteDraftBanner ? (
+          <div className="p-4 rounded-lg border bg-muted border-border text-sm text-foreground">
+            We filled in your quote request — review the details below and add to cart when ready.
+          </div>
+        ) : null}
 
         <FormErrorAlert message={error || undefined} />
 

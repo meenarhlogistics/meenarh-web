@@ -10,6 +10,7 @@ interface Step {
   title: string;
   description: string;
   imageSrc: string;
+  imageAlt?: string;
 }
 
 interface HowItWorksProps {
@@ -213,7 +214,7 @@ export function HowItWorks({ title, steps }: HowItWorksProps) {
                   slideRefs.current[i] = el;
                 }}
                 className={cn(
-                  "relative aspect-[4/3] w-[92%] shrink-0 snap-center overflow-hidden rounded-2xl border border-border bg-muted shadow-md sm:rounded-3xl md:aspect-[16/10]",
+                  "relative aspect-[4/3] w-[92%] shrink-0 snap-center overflow-hidden rounded-2xl border border-border bg-card shadow-md sm:rounded-3xl md:aspect-[16/10]",
                   i === physicalActive
                     ? "opacity-100 ring-2 ring-primary/25"
                     : "opacity-70 sm:opacity-80"
@@ -221,15 +222,11 @@ export function HowItWorks({ title, steps }: HowItWorksProps) {
               >
                 <Image
                   src={s.imageSrc}
-                  alt=""
+                  alt={s.imageAlt ?? s.title}
                   fill
-                  className="object-cover"
+                  className="object-contain p-4 sm:p-6"
                   sizes="(max-width: 768px) 92vw, 1024px"
                   priority={s.__logicalIndex === 0 && i >= len && i < len * 2}
-                />
-                <div
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/75 via-transparent to-transparent"
-                  aria-hidden
                 />
                 {i === physicalActive && (
                   <div className="absolute left-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground shadow-sm">

@@ -264,11 +264,12 @@ export interface BulkOrderItem {
 export interface BulkOrder {
   id: number;
   tracking_number: string;
+  paystack_reference?: string | null;
   sender_name: string;
   sender_phone?: string;
   pickup_address: string;
   price: number;
-  status: 'Order Created';
+  status: 'Pending Payment' | 'Order Created';
   created_at: string;
   updated_at: string;
   item_count?: number;

@@ -3,12 +3,23 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Card } from "@/components/ui";
-import { paymentsApi } from "@/lib/api/payments";
+import { paymentsApi, type PaystackVerifyResponse } from "@/lib/api/payments";
 import { useCartStore } from "@/lib/store/cartStore";
 import type { CheckoutResponse } from "@/types";
 import { getApiErrorMessage } from "@/lib/errors/apiError";
 
 type SuccessData = NonNullable<CheckoutResponse["data"]>;
+
+const POLL_INTERVAL_MS = 2000;
+const MAX_POLL_MS = 180000;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isConfirmed(res: PaystackVerifyResponse) {
+  return res.payment_state === "confirmed" || (!res.payment_state && res.success && !!res.data);
+}
 
 function CallbackContent() {
   const router = useRouter();
@@ -16,27 +27,73 @@ function CallbackContent() {
   const fetchCart = useCartStore((s) => s.fetchCart);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [timedOut, setTimedOut] = useState(false);
+  const [reference, setReference] = useState<string | null>(null);
+  const [pendingPreview, setPendingPreview] = useState<SuccessData | null>(null);
   const [success, setSuccess] = useState<SuccessData | null>(null);
 
+  const retryVerify = async () => {
+    if (!reference) return;
+    setLoading(true);
+    setError("");
+    setTimedOut(false);
+    try {
+      const res = await paymentsApi.verifyPaystack(reference);
+      if (isConfirmed(res) && res.data) {
+        setSuccess(res.data);
+        setPendingPreview(null);
+        await fetchCart();
+      } else if (res.payment_state === "pending_payment" && res.data) {
+        setPendingPreview(res.data);
+        setTimedOut(true);
+      } else {
+        setError("Verification did not complete successfully.");
+      }
+    } catch (err) {
+      setError(
+        getApiErrorMessage(
+          err,
+          "Could not verify payment. If you were charged, contact support with your reference."
+        )
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const reference = searchParams.get("reference");
-    if (!reference) {
+    const ref = searchParams.get("reference");
+    if (!ref) {
       setError("Missing payment reference. Return to checkout and try again.");
       setLoading(false);
       return;
     }
 
+    setReference(ref);
     let cancelled = false;
+
     (async () => {
+      const started = Date.now();
       try {
-        const res = await paymentsApi.verifyPaystack(reference);
-        if (cancelled) return;
-        if (res.success && res.data) {
-          setSuccess(res.data);
-          // fetchCart is a no-op for bulk orders but harmless to call
-          await fetchCart();
-        } else {
-          setError("Verification did not complete successfully.");
+        while (Date.now() - started < MAX_POLL_MS) {
+          const res = await paymentsApi.verifyPaystack(ref);
+          if (cancelled) return;
+
+          if (isConfirmed(res) && res.data) {
+            setSuccess(res.data);
+            await fetchCart();
+            return;
+          }
+
+          if (res.payment_state === "pending_payment" && res.data) {
+            setPendingPreview(res.data);
+          }
+
+          await sleep(POLL_INTERVAL_MS);
+        }
+
+        if (!cancelled) {
+          setTimedOut(true);
         }
       } catch (err) {
         if (cancelled) return;
@@ -55,8 +112,10 @@ function CallbackContent() {
       }
     })();
 
-    return () => { cancelled = true; };
-  }, [searchParams, fetchCart]);
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, fetchCart, router]);
 
   if (loading) {
     return (
@@ -64,6 +123,58 @@ function CallbackContent() {
         <Card className="p-8 text-center">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Confirming your payment…</p>
+          {pendingPreview?.entries?.length || pendingPreview?.orders?.length ? (
+            <p className="text-sm text-muted-foreground mt-3">
+              Your order is reserved. Tracking will appear here once payment clears.
+            </p>
+          ) : null}
+        </Card>
+      </div>
+    );
+  }
+
+  if (timedOut && !success) {
+    const previewEntries =
+      pendingPreview?.entries && pendingPreview.entries.length > 0
+        ? pendingPreview.entries
+        : pendingPreview?.orders?.map((order) => ({
+            kind: "single" as const,
+            tracking_number: order.tracking_number,
+            price: order.price,
+          })) ?? [];
+
+    return (
+      <div className="max-w-3xl mx-auto">
+        <Card className="p-8 text-center space-y-4">
+          <h1 className="text-2xl font-semibold text-foreground">Payment still processing</h1>
+          <p className="text-muted-foreground text-sm">
+            Your bank may take a few minutes to confirm. We have reserved your order
+            {reference ? (
+              <>
+                {" "}
+                (reference <span className="font-mono">{reference}</span>)
+              </>
+            ) : null}
+            .
+          </p>
+          {previewEntries.length > 0 && (
+            <div className="bg-muted rounded-lg p-4 text-left space-y-2">
+              <p className="text-sm text-muted-foreground text-center">Tracking numbers</p>
+              {previewEntries.map((entry) => (
+                <p key={entry.tracking_number} className="font-mono text-sm text-foreground">
+                  {entry.tracking_number}
+                </p>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="primary" onClick={retryVerify}>
+              Check again
+            </Button>
+            <Button variant="secondary" onClick={() => router.push("/dashboard/orders")}>
+              View my orders
+            </Button>
+          </div>
         </Card>
       </div>
     );

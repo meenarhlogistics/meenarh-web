@@ -11,7 +11,7 @@ const SETTING_FIELDS = [
   { key: "phone", label: "Phone Number", placeholder: "08012345678" },
   { key: "email", label: "Email Address", placeholder: "info@meenarh.com" },
   { key: "address", label: "Office Address", placeholder: "Lagos, Nigeria" },
-  { key: "whatsapp", label: "WhatsApp Number", placeholder: "2348012345678" },
+  { key: "whatsapp", label: "WhatsApp Number", placeholder: "2349048795414" },
 ];
 
 export default function SettingsPage() {

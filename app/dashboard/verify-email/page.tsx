@@ -7,6 +7,7 @@ import { Button, Card, FormErrorAlert } from "@/components/ui";
 import { authApi } from "@/lib/api/auth";
 import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 import { useAuthStore } from "@/lib/store/authStore";
+import { consumePostAuthRedirect } from "@/lib/auth/postAuthRedirect";
 
 function VerifyEmailInner() {
   const router = useRouter();
@@ -25,7 +26,7 @@ function VerifyEmailInner() {
 
   useEffect(() => {
     if (isVerified) {
-      router.replace("/dashboard");
+      router.replace(consumePostAuthRedirect("/dashboard"));
     }
   }, [isVerified, router]);
 
@@ -34,7 +35,7 @@ function VerifyEmailInner() {
     void (async () => {
       await loadAuth();
       if (useAuthStore.getState().user?.is_email_verified) {
-        router.replace("/dashboard");
+        router.replace(consumePostAuthRedirect("/dashboard"));
       }
     })();
   }, [status, loadAuth, router]);

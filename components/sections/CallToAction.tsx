@@ -15,6 +15,8 @@ interface CallToActionProps {
   buttonText: string;
   helperText?: string;
   primaryHref: string;
+  secondaryButtonText?: string;
+  secondaryHref?: string;
   appStoreHref?: string;
   googlePlayHref?: string;
 }
@@ -51,6 +53,8 @@ export function CallToAction({
   buttonText,
   helperText,
   primaryHref,
+  secondaryButtonText,
+  secondaryHref,
   appStoreHref,
   googlePlayHref,
 }: CallToActionProps) {
@@ -111,9 +115,10 @@ export function CallToAction({
                 {description}
               </motion.p>
 
-              {/* Button — scale pop spring */}
+              {/* CTAs */}
               <motion.div
-                initial={{ opacity: 0, scale: 0 }}
+                className="flex flex-col sm:flex-row flex-wrap gap-3"
+                initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{
@@ -122,17 +127,27 @@ export function CallToAction({
                   damping: 20,
                   delay: 0.45,
                 }}
-                style={{ width: "fit-content" }}
               >
                 <Link
                   href={primaryHref}
                   className={cn(
-                    "inline-flex min-h-12 w-fit items-center justify-center rounded-xl bg-primary px-10 py-4 text-base font-semibold text-primary-foreground shadow-md transition-colors hover:bg-primary/90 sm:text-lg",
+                    "inline-flex min-h-12 w-full sm:w-fit items-center justify-center rounded-xl bg-primary px-10 py-4 text-base font-semibold text-primary-foreground shadow-md transition-colors hover:bg-primary/90 sm:text-lg",
                     focusOnCard
                   )}
                 >
                   {buttonText}
                 </Link>
+                {secondaryButtonText && secondaryHref ? (
+                  <Link
+                    href={secondaryHref}
+                    className={cn(
+                      "inline-flex min-h-12 w-full sm:w-fit items-center justify-center rounded-xl border border-foreground/25 bg-transparent px-10 py-4 text-base font-semibold text-foreground transition-colors hover:bg-foreground/5 sm:text-lg",
+                      focusOnCard
+                    )}
+                  >
+                    {secondaryButtonText}
+                  </Link>
+                ) : null}
               </motion.div>
 
               {showStores ? (

@@ -1,18 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Input, FormErrorAlert } from "@/components/ui";
+import { AuthMarketingBar } from "@/components/layout/AuthMarketingBar";
 import { authApi } from "@/lib/api/auth";
 import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
 import { useAuthStore } from "@/lib/store/authStore";
+import { safeRedirect } from "@/lib/auth/safeRedirect";
+import { setPostAuthRedirect } from "@/lib/auth/postAuthRedirect";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextParam = searchParams.get("next");
   const setAuth = useAuthStore((state) => state.setAuth);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -23,6 +28,10 @@ export default function SignupPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
+
+  const loginHref = nextParam
+    ? `/login?next=${encodeURIComponent(nextParam)}`
+    : "/login";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -36,7 +45,6 @@ export default function SignupPage() {
     e.preventDefault();
     setErrorDetails(null);
 
-    // Basic validation
     if (formData.password !== formData.confirmPassword) {
       setErrorDetails({ message: "Passwords do not match" });
       return;
@@ -50,19 +58,21 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      // Prepare signup data (exclude confirmPassword and blank optional address)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, default_address, ...signupData } = formData;
+      void confirmPassword;
       const payload = {
         ...signupData,
         ...(default_address.trim() ? { default_address: default_address.trim() } : {}),
       };
 
       const response = await authApi.signup(payload);
-      
+
       if (response.success) {
         setAuth(response.data.user);
-
+        const redirect = safeRedirect(nextParam);
+        if (redirect) {
+          setPostAuthRedirect(redirect);
+        }
         router.push("/dashboard/verify-email");
       } else {
         setErrorDetails({
@@ -71,17 +81,14 @@ export default function SignupPage() {
       }
     } catch (err) {
       console.error("Signup error:", err);
-      setErrorDetails(
-        getApiErrorDetails(err, "Failed to create account. Please try again.")
-      );
+      setErrorDetails(getApiErrorDetails(err, "Failed to create account. Please try again."));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-      {/* Background Blobs */}
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12 pt-20">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className="absolute top-0 left-0 w-96 h-96 bg-accent rounded-full blur-3xl opacity-40 animate-float"
@@ -94,7 +101,6 @@ export default function SignupPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md">
-        {/* Logo */}
         <Link href="/" className="flex items-center justify-center gap-2 mb-8">
           <Image
             src="/meenarh logo.svg"
@@ -103,26 +109,16 @@ export default function SignupPage() {
             height={40}
             className="w-10 h-10"
           />
-          <span className="text-xl font-semibold text-foreground">
-            Meenarh Logistics
-          </span>
+          <span className="text-xl font-semibold text-foreground">Meenarh Logistics</span>
         </Link>
 
-        {/* Signup Card */}
         <div className="bg-card rounded-xl shadow-lg border border-border p-8">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-semibold text-foreground mb-2">
-              Create an account
-            </h1>
-            <p className="text-muted-foreground">
-              Sign up to start sending packages
-            </p>
+            <h1 className="text-2xl font-semibold text-foreground mb-2">Create an account</h1>
+            <p className="text-muted-foreground">Sign up to start sending packages</p>
           </div>
 
-          <FormErrorAlert
-            message={errorDetails?.message}
-            items={errorDetails?.items}
-          />
+          <FormErrorAlert message={errorDetails?.message} items={errorDetails?.items} />
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
@@ -209,13 +205,7 @@ export default function SignupPage() {
               </label>
             </div>
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" variant="primary" size="lg" className="w-full" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Create account"}
             </Button>
           </form>
@@ -223,17 +213,13 @@ export default function SignupPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link
-                href="/login"
-                className="text-primary hover:underline font-medium"
-              >
+              <Link href={loginHref} className="text-primary hover:underline font-medium">
                 Sign in
               </Link>
             </p>
           </div>
         </div>
 
-        {/* Back to Home */}
         <div className="text-center mt-6">
           <Link
             href="/"
@@ -244,5 +230,22 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <>
+      <AuthMarketingBar />
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center pt-20 text-muted-foreground">
+            Loading…
+          </div>
+        }
+      >
+        <SignupForm />
+      </Suspense>
+    </>
   );
 }

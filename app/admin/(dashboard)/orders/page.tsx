@@ -3,11 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { adminApi } from "@/lib/api/admin";
 import { Badge, Button, Input, FormErrorAlert } from "@/components/ui";
+import { PaystackReferenceCopy } from "@/components/admin/PaystackReferenceCopy";
 import { getApiErrorDetails, showApiErrorToast, type ParsedApiError } from "@/lib/errors/apiError";
 
 interface Order {
   id: number;
   tracking_number: string;
+  paystack_reference?: string | null;
   sender_name: string;
   receiver_name: string;
   pickup_address: string;
@@ -19,7 +21,9 @@ interface Order {
   updated_at: string;
 }
 
-const VALID_STATUSES = [
+const PENDING_PAYMENT_STATUS = "Pending Payment";
+
+const LOGISTICS_STATUSES = [
   "Order Created",
   "Picked Up",
   "In Transit",
@@ -27,8 +31,11 @@ const VALID_STATUSES = [
   "Delivered",
 ];
 
+const FILTER_STATUSES = [PENDING_PAYMENT_STATUS, ...LOGISTICS_STATUSES];
+
 function statusVariant(status: string): "default" | "success" | "warning" | "error" | "info" {
   switch (status) {
+    case PENDING_PAYMENT_STATUS: return "warning";
     case "Delivered": return "success";
     case "In Transit":
     case "Out for Delivery": return "warning";
@@ -44,6 +51,7 @@ interface StatusModalProps {
 }
 
 function StatusModal({ order, onClose, onUpdated }: StatusModalProps) {
+  const isPendingPayment = order.status === PENDING_PAYMENT_STATUS;
   const [status, setStatus] = useState(order.status);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -53,7 +61,8 @@ function StatusModal({ order, onClose, onUpdated }: StatusModalProps) {
     setSaving(true);
     setErrorDetails(null);
     try {
-      await adminApi.updateOrderStatus(order.id, status, note || undefined);
+      const statusToSend = isPendingPayment ? PENDING_PAYMENT_STATUS : status;
+      await adminApi.updateOrderStatus(order.id, statusToSend, note || undefined);
       onUpdated();
       onClose();
     } catch (err) {
@@ -65,39 +74,67 @@ function StatusModal({ order, onClose, onUpdated }: StatusModalProps) {
     }
   };
 
+  const canSave = isPendingPayment ? !!note.trim() : status !== order.status || !!note.trim();
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
       <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">Update Order Status</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          {isPendingPayment ? "Pending payment order" : "Update Order Status"}
+        </h2>
         <div className="text-sm text-muted-foreground">
           <span className="font-mono text-foreground font-medium">{order.tracking_number}</span>
           {" — "}
           {order.receiver_name}
         </div>
 
+        <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground">Paystack reference</p>
+          <PaystackReferenceCopy reference={order.paystack_reference} />
+          <p className="text-xs text-muted-foreground">
+            Search this reference on the Paystack dashboard to find the transaction.
+          </p>
+        </div>
+
+        {isPendingPayment && (
+          <p className="text-sm text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+            Payment has not been confirmed yet. You can add an internal note only. Delivery
+            status updates unlock after the system confirms payment.
+          </p>
+        )}
+
         <FormErrorAlert
           message={errorDetails?.message}
           items={errorDetails?.items}
         />
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">New Status</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="w-full px-4 py-3 bg-muted border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
-          >
-            {VALID_STATUSES.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
+        {isPendingPayment ? (
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">Status</label>
+            <p className="px-4 py-3 bg-muted border border-input rounded-lg text-foreground">
+              {PENDING_PAYMENT_STATUS}
+            </p>
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">New Status</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="w-full px-4 py-3 bg-muted border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+            >
+              {LOGISTICS_STATUSES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <Input
-          label="Note (optional)"
+          label={isPendingPayment ? "Note" : "Note (optional)"}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="e.g. Package delivered to gateman"
+          placeholder={isPendingPayment ? "e.g. Customer called about bank transfer delay" : "e.g. Package delivered to gateman"}
           id="status-note"
         />
 
@@ -105,8 +142,8 @@ function StatusModal({ order, onClose, onUpdated }: StatusModalProps) {
           <Button variant="secondary" onClick={onClose} disabled={saving} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSave} disabled={saving || status === order.status} className="w-full sm:w-auto">
-            {saving ? "Saving..." : "Update Status"}
+          <Button variant="primary" onClick={handleSave} disabled={saving || !canSave} className="w-full sm:w-auto">
+            {saving ? "Saving..." : isPendingPayment ? "Add note" : "Update Status"}
           </Button>
         </div>
       </div>
@@ -141,6 +178,7 @@ export default function OrdersPage() {
     const q = search.toLowerCase();
     const matchesSearch =
       o.tracking_number.toLowerCase().includes(q) ||
+      (o.paystack_reference || "").toLowerCase().includes(q) ||
       o.sender_name.toLowerCase().includes(q) ||
       o.receiver_name.toLowerCase().includes(q) ||
       o.delivery_address.toLowerCase().includes(q);
@@ -177,7 +215,7 @@ export default function OrdersPage() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1">
           <Input
-            placeholder="Search by tracking number, name, or address..."
+            placeholder="Search by tracking, Paystack reference, name, or address…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             id="order-search"
@@ -189,7 +227,7 @@ export default function OrdersPage() {
           className="px-4 py-3 bg-muted border border-input rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all"
         >
           <option value="all">All Statuses</option>
-          {VALID_STATUSES.map((s) => (
+          {FILTER_STATUSES.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
@@ -197,7 +235,7 @@ export default function OrdersPage() {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {VALID_STATUSES.map((s) => {
+        {FILTER_STATUSES.map((s) => {
           const count = orders.filter((o) => o.status === s).length;
           return (
             <button
@@ -222,6 +260,7 @@ export default function OrdersPage() {
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="text-left p-4 font-medium text-muted-foreground whitespace-nowrap">Tracking</th>
+                <th className="text-left p-4 font-medium text-muted-foreground whitespace-nowrap">Paystack ref</th>
                 <th className="text-left p-4 font-medium text-muted-foreground whitespace-nowrap">Sender</th>
                 <th className="text-left p-4 font-medium text-muted-foreground whitespace-nowrap">Receiver</th>
                 <th className="text-left p-4 font-medium text-muted-foreground whitespace-nowrap">Destination</th>
@@ -234,7 +273,7 @@ export default function OrdersPage() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="p-8 text-center text-muted-foreground">
                     {search || statusFilter !== "all" ? "No orders match your filters." : "No orders yet."}
                   </td>
                 </tr>
@@ -248,6 +287,9 @@ export default function OrdersPage() {
                       <span className="font-mono text-xs font-medium text-foreground">
                         {order.tracking_number}
                       </span>
+                    </td>
+                    <td className="p-4 max-w-[200px]">
+                      <PaystackReferenceCopy reference={order.paystack_reference} />
                     </td>
                     <td className="p-4 text-foreground">{order.sender_name}</td>
                     <td className="p-4 text-foreground">{order.receiver_name}</td>

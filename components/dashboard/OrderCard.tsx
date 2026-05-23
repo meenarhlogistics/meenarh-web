@@ -7,6 +7,7 @@ interface OrderCardProps {
 }
 
 const STATUS_COLORS: Record<string, string> = {
+  "Pending Payment": "bg-amber-500/15 text-amber-700 dark:text-amber-400",
   "Order Created": "bg-muted text-muted-foreground",
   "Picked Up": "bg-chart-2/20 text-chart-2",
   "In Transit": "bg-chart-4/20 text-chart-4",

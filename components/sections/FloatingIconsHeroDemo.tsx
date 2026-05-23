@@ -53,7 +53,6 @@ export default function FloatingIconsHeroDemo() {
       title="Lagos Deliveries, Right On Time"
       subtitle="From Yaba to Lekki, Ikeja to Ajah — track every package across Lagos in real time."
       ctaText="Start Shipping in Lagos"
-      ctaHref="/dashboard/track"
       icons={demoIcons}
     />
   );

@@ -2,11 +2,13 @@
 
 import * as React from "react";
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui";
+import { trackLoginUrl } from "@/lib/auth/trackLogin";
 
 interface IconProps {
   id: number;
@@ -19,10 +21,12 @@ export interface FloatingIconsHeroProps {
   title: string;
   subtitle: string;
   ctaText: string;
-  ctaHref: string;
   icons: IconProps[];
   cursiveAccent?: string;
-  secondaryCta?: string;
+  quoteCta?: string;
+  quoteHref?: string;
+  contactCta?: string;
+  contactHref?: string;
   inputPlaceholder?: string;
 }
 
@@ -37,118 +41,79 @@ const Icon = ({
   iconData: IconProps;
   index: number;
 }) => {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const floatDuration = React.useMemo(() => {
-    // Deterministic pseudo-random duration derived from icon id (no Math.random in render)
-    const seed = (iconData.id * 9301 + 49297) % 233280;
-    const t = seed / 233280;
-    return 5 + t * 5;
-  }, [iconData.id]);
-
+  const IconComponent = iconData.icon;
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const springX = useSpring(x, { stiffness: 300, damping: 20 });
-  const springY = useSpring(y, { stiffness: 300, damping: 20 });
+  const springX = useSpring(x, { stiffness: 150, damping: 20 });
+  const springY = useSpring(y, { stiffness: 150, damping: 20 });
 
   React.useEffect(() => {
-    const handleMouseMove = () => {
-      if (ref.current) {
-        const rect = ref.current.getBoundingClientRect();
-        const distance = Math.sqrt(
-          Math.pow(mouseX.current - (rect.left + rect.width / 2), 2) +
-            Math.pow(mouseY.current - (rect.top + rect.height / 2), 2)
-        );
-
-        if (distance < 150) {
-          const angle = Math.atan2(
-            mouseY.current - (rect.top + rect.height / 2),
-            mouseX.current - (rect.left + rect.width / 2)
-          );
-          const force = (1 - distance / 150) * 50;
-          x.set(-Math.cos(angle) * force);
-          y.set(-Math.sin(angle) * force);
-        } else {
-          x.set(0);
-          y.set(0);
-        }
-      }
+    const handleMove = () => {
+      const el = document.querySelector(`[data-icon-id="${iconData.id}"]`);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const distX = mouseX.current - centerX;
+      const distY = mouseY.current - centerY;
+      const dist = Math.sqrt(distX * distX + distY * distY);
+      const maxDist = 200;
+      const force = Math.max(0, 1 - dist / maxDist);
+      x.set(-distX * force * 0.15);
+      y.set(-distY * force * 0.15);
     };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [x, y, mouseX, mouseY]);
+    window.addEventListener("mousemove", handleMove);
+    return () => window.removeEventListener("mousemove", handleMove);
+  }, [mouseX, mouseY, iconData.id, x, y]);
 
   return (
     <motion.div
-      ref={ref}
-      key={iconData.id}
-      style={{
-        x: springX,
-        y: springY,
-      }}
-      initial={{ opacity: 0, scale: 0.5 }}
+      data-icon-id={iconData.id}
+      className={cn(
+        "absolute flex flex-col items-center gap-1 text-muted-foreground/80",
+        iconData.className
+      )}
+      style={{ x: springX, y: springY }}
+      initial={{ opacity: 0, scale: 0 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{
-        delay: index * 0.08,
-        duration: 0.6,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className={cn("absolute", iconData.className)}
+      transition={{ delay: index * 0.05, duration: 0.4 }}
     >
-      <motion.div
-        className="flex flex-col items-center justify-center"
-        animate={{
-          y: [0, -8, 0, 8, 0],
-          x: [0, 6, 0, -6, 0],
-          rotate: [0, 5, 0, -5, 0],
-        }}
-        transition={{
-          duration: floatDuration,
-          repeat: Infinity,
-          repeatType: "mirror",
-          ease: "easeInOut",
-        }}
-      >
-        <iconData.icon className="w-5 h-5 md:w-6 md:h-6 text-primary" aria-hidden />
-      </motion.div>
+      <IconComponent className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden />
+      {iconData.label ? (
+        <span className="text-[0.65rem] sm:text-xs font-medium">{iconData.label}</span>
+      ) : null}
     </motion.div>
   );
 };
 
-const renderHeadline = (title: string, cursiveAccent?: string) => {
-  if (!cursiveAccent) {
+function renderHeadline(title: string, cursiveAccent?: string) {
+  if (!cursiveAccent || !title.includes(cursiveAccent)) {
     return title;
   }
-
   const parts = title.split(cursiveAccent);
-  if (parts.length === 1) {
-    return title;
-  }
-
   return (
     <>
       {parts[0]}
-      <span className="font-serif text-primary">{cursiveAccent}</span>
+      <span className="font-serif italic text-primary">{cursiveAccent}</span>
       {parts[1]}
     </>
   );
-};
+}
 
-const FloatingIconsHero = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & FloatingIconsHeroProps
->(
+const FloatingIconsHero = React.forwardRef<HTMLElement, FloatingIconsHeroProps & React.HTMLAttributes<HTMLElement>>(
   (
     {
       className,
       title,
       subtitle,
       ctaText,
-      ctaHref,
       icons,
       cursiveAccent,
-      secondaryCta,
-      inputPlaceholder,
+      quoteCta,
+      quoteHref = "/pricing#quote",
+      contactCta,
+      contactHref = "/contact",
+      inputPlaceholder = "Enter tracking code",
       ...props
     },
     ref
@@ -169,9 +134,7 @@ const FloatingIconsHero = React.forwardRef<
 
     const handleTrack = () => {
       const q = trackingCode.trim();
-      if (!q) return;
-      const sep = ctaHref.includes("?") ? "&" : "?";
-      router.push(`${ctaHref}${sep}tracking=${encodeURIComponent(q)}`);
+      router.push(trackLoginUrl(q || undefined));
     };
 
     return (
@@ -208,7 +171,7 @@ const FloatingIconsHero = React.forwardRef<
 
           <p className="text-lg sm:text-xl text-muted-foreground max-w-md mx-auto">{subtitle}</p>
 
-          <div className="max-w-md mx-auto">
+          <div className="max-w-md mx-auto w-full">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
                 <Input
@@ -217,23 +180,31 @@ const FloatingIconsHero = React.forwardRef<
                   value={trackingCode}
                   onChange={(e) => setTrackingCode(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleTrack()}
+                  aria-label="Tracking code"
                 />
               </div>
               <Button
                 variant="default"
                 onClick={handleTrack}
-                className="transition-colors duration-200 hover:shadow-md"
+                className="transition-colors duration-200 hover:shadow-md min-h-11"
               >
                 {ctaText}
               </Button>
             </div>
           </div>
 
-          {secondaryCta && (
-            <div className="mt-4">
-              <Button variant="outline" asChild className="transition-colors duration-200">
-                <a href="#request-pickup">{secondaryCta}</a>
-              </Button>
+          {(quoteCta || contactCta) && (
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center pt-2">
+              {quoteCta ? (
+                <Button variant="outline" asChild className="min-h-11">
+                  <Link href={quoteHref}>{quoteCta}</Link>
+                </Button>
+              ) : null}
+              {contactCta ? (
+                <Button variant="ghost" asChild className="min-h-11">
+                  <Link href={contactHref}>{contactCta}</Link>
+                </Button>
+              ) : null}
             </div>
           )}
         </div>

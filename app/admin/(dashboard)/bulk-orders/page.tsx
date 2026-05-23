@@ -3,13 +3,17 @@
 import { useEffect, useState, useCallback } from "react";
 import { adminApi } from "@/lib/api/admin";
 import { Badge, Button, Input, FormErrorAlert } from "@/components/ui";
+import { PaystackReferenceCopy } from "@/components/admin/PaystackReferenceCopy";
 import { getApiErrorDetails, showApiErrorToast, type ParsedApiError } from "@/lib/errors/apiError";
 import type { BulkOrder, BulkOrderDetail, BulkOrderItem } from "@/types";
 
 const ITEM_STATUSES = ["Pending", "Picked Up", "In Transit", "Out for Delivery", "Delivered"] as const;
 
+const PENDING_PAYMENT_STATUS = "Pending Payment";
+
 function statusVariant(status: string): "default" | "success" | "warning" | "error" | "info" {
   switch (status) {
+    case PENDING_PAYMENT_STATUS: return "warning";
     case "Delivered": return "success";
     case "In Transit":
     case "Out for Delivery": return "warning";
@@ -128,6 +132,7 @@ interface BulkDetailProps {
 
 function BulkDetailDrawer({ bulk, onClose, onUpdated }: BulkDetailProps) {
   const [selectedItem, setSelectedItem] = useState<BulkOrderItem | null>(null);
+  const paymentPending = bulk.status === PENDING_PAYMENT_STATUS;
 
   return (
     <>
@@ -146,9 +151,13 @@ function BulkDetailDrawer({ bulk, onClose, onUpdated }: BulkDetailProps) {
       <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-40 px-0 sm:px-4">
         <div className="bg-card border border-border rounded-t-2xl sm:rounded-xl shadow-xl w-full sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <div className="sticky top-0 bg-card border-b border-border p-4 sm:p-6 flex items-start justify-between">
-            <div>
+            <div className="min-w-0 flex-1 pr-4">
               <h2 className="text-lg font-semibold text-foreground">Bulk Order</h2>
               <p className="font-mono text-sm text-muted-foreground">{bulk.tracking_number}</p>
+              <div className="mt-2 space-y-1">
+                <p className="text-xs text-muted-foreground">Paystack reference</p>
+                <PaystackReferenceCopy reference={bulk.paystack_reference} />
+              </div>
             </div>
             <button
               onClick={onClose}
@@ -160,6 +169,18 @@ function BulkDetailDrawer({ bulk, onClose, onUpdated }: BulkDetailProps) {
           </div>
 
           <div className="p-4 sm:p-6 space-y-6">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Parent status</span>
+              <Badge variant={statusVariant(bulk.status)}>{bulk.status}</Badge>
+            </div>
+
+            {paymentPending && (
+              <p className="text-sm text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                Payment is not confirmed yet. Item delivery updates are blocked until the system
+                confirms payment.
+              </p>
+            )}
+
             {/* Bulk summary */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
               <div>
@@ -211,7 +232,7 @@ function BulkDetailDrawer({ bulk, onClose, onUpdated }: BulkDetailProps) {
                           )}
                         </p>
                       </div>
-                      {item.status !== "Delivered" && (
+                      {item.status !== "Delivered" && !paymentPending && (
                         <Button
                           variant="secondary"
                           size="sm"
@@ -291,7 +312,8 @@ export default function BulkOrdersPage() {
     const q = search.toLowerCase();
     return (
       b.tracking_number.toLowerCase().includes(q) ||
-      b.sender_name.toLowerCase().includes(q)
+      b.sender_name.toLowerCase().includes(q) ||
+      (b.paystack_reference || "").toLowerCase().includes(q)
     );
   });
 
@@ -326,7 +348,7 @@ export default function BulkOrdersPage() {
 
       <div className="flex-1">
         <Input
-          placeholder="Search by tracking number or sender name…"
+          placeholder="Search by tracking, Paystack reference, or sender name…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           id="bulk-search"
@@ -339,6 +361,7 @@ export default function BulkOrdersPage() {
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="text-left p-4 font-medium text-muted-foreground whitespace-nowrap">Tracking</th>
+                <th className="text-left p-4 font-medium text-muted-foreground whitespace-nowrap">Paystack ref</th>
                 <th className="text-left p-4 font-medium text-muted-foreground whitespace-nowrap">Sender</th>
                 <th className="text-left p-4 font-medium text-muted-foreground whitespace-nowrap">Items</th>
                 <th className="text-left p-4 font-medium text-muted-foreground whitespace-nowrap">Total</th>
@@ -350,7 +373,7 @@ export default function BulkOrdersPage() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
                     {search ? "No bulk orders match your search." : "No bulk orders yet."}
                   </td>
                 </tr>
@@ -365,13 +388,16 @@ export default function BulkOrdersPage() {
                         {bulk.tracking_number}
                       </span>
                     </td>
+                    <td className="p-4 max-w-[200px]">
+                      <PaystackReferenceCopy reference={bulk.paystack_reference} />
+                    </td>
                     <td className="p-4 text-foreground">{bulk.sender_name}</td>
                     <td className="p-4 text-muted-foreground">{bulk.item_count ?? "—"}</td>
                     <td className="p-4 text-foreground font-medium">
                       ₦{(bulk.price || 0).toLocaleString()}
                     </td>
                     <td className="p-4">
-                      <Badge variant="default">{bulk.status}</Badge>
+                      <Badge variant={statusVariant(bulk.status)}>{bulk.status}</Badge>
                     </td>
                     <td className="p-4 text-muted-foreground whitespace-nowrap">
                       {new Date(bulk.created_at).toLocaleDateString()}

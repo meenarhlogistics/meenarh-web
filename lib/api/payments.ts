@@ -40,10 +40,20 @@ export const paymentsApi = {
     return response.data;
   },
 
-  verifyPaystack: async (reference: string): Promise<CheckoutResponse> => {
+  verifyPaystack: async (reference: string): Promise<PaystackVerifyResponse> => {
     const response = await apiClient.post("/payments/paystack/verify", {
       reference,
     });
     return response.data;
   },
+};
+
+export type PaystackPaymentState = "confirmed" | "pending_payment";
+
+export type PaystackVerifyResponse = CheckoutResponse & {
+  payment_state?: PaystackPaymentState;
+  data: CheckoutResponse["data"] & {
+    reference?: string;
+    message?: string;
+  };
 };

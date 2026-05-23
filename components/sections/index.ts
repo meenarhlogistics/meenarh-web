@@ -1,4 +1,6 @@
 export { Hero } from "./Hero";
+export { HeroVisual } from "./HeroVisual";
+export { ServicesOverview } from "./ServicesOverview";
 export { HowItWorks } from "./HowItWorks";
 export { TrackingPreview } from "./TrackingPreview";
 export { Coverage } from "./Coverage";

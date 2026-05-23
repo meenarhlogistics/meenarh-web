@@ -108,6 +108,14 @@ export default function TrackOrderPage() {
       {/* Order Timeline */}
       {order && !isLoading && (
         <div className="max-w-4xl">
+          {order.status === "Pending Payment" && (
+            <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <p className="text-sm text-amber-800 dark:text-amber-300">
+                We are waiting for your payment to clear. Your order is reserved; delivery updates
+                will begin once payment is confirmed.
+              </p>
+            </div>
+          )}
           <div className="mb-6 p-4 bg-accent/30 rounded-lg border border-border">
             <p className="text-sm text-muted-foreground mb-1">
               Tracking Number
