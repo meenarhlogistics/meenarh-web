@@ -195,13 +195,23 @@ function SignupForm() {
               />
               <label htmlFor="terms" className="text-muted-foreground">
                 I agree to the{" "}
-                <a href="#" className="text-primary hover:underline">
+                <Link
+                  href="/terms"
+                  className="text-primary hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Terms of Service
-                </a>{" "}
+                </Link>{" "}
                 and{" "}
-                <a href="#" className="text-primary hover:underline">
+                <Link
+                  href="/privacy"
+                  className="text-primary hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Privacy Policy
-                </a>
+                </Link>
               </label>
             </div>
 

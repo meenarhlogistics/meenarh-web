@@ -18,6 +18,11 @@ export const SITE_CONFIG = {
   whatsappLabel: "Chat on WhatsApp",
 };
 
+export const LEGAL_LINKS = {
+  privacy: "/privacy",
+  terms: "/terms",
+} as const;
+
 export const FOOTER_LANDING_CONTENT = {
   headline: "Let's talk about your deliveries and the next steps.",
   primaryCta: { label: "Get a quote", href: "/pricing#quote" },
@@ -31,7 +36,8 @@ export const FOOTER_LANDING_CONTENT = {
   socialLinks: [
     { label: COMPANY_CONTACT.instagramLabel, href: COMPANY_CONTACT.instagramLink },
   ],
-  privacyHref: undefined as string | undefined,
+  privacyHref: LEGAL_LINKS.privacy,
+  termsHref: LEGAL_LINKS.terms,
   attribution: undefined as string | undefined,
 };
 
@@ -60,6 +66,8 @@ export const FOOTER_LINKS = [
   { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "/contact" },
   { label: "Blog", href: "/blog" },
+  { label: "Privacy", href: LEGAL_LINKS.privacy },
+  { label: "Terms", href: LEGAL_LINKS.terms },
 ];
 
 /** Staff-only entry point (footer only, not in main nav). */

@@ -1,9 +1,8 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/admin/(auth)/login/page": "app/admin/(auth)/login/page.js",
-  "/login/page": "app/login/page.js",
+  "/signup/page": "app/signup/page.js",
   "/(marketing)/page": "app/(marketing)/page.js",
-  "/(marketing)/pricing/page": "app/(marketing)/pricing/page.js",
-  "/(marketing)/services/page": "app/(marketing)/services/page.js",
-  "/(marketing)/about/page": "app/(marketing)/about/page.js"
+  "/(marketing)/terms/page": "app/(marketing)/terms/page.js",
+  "/(marketing)/privacy/page": "app/(marketing)/privacy/page.js",
+  "/(marketing)/faq/page": "app/(marketing)/faq/page.js"
 }

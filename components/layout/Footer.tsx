@@ -52,8 +52,24 @@ export function Footer({
       : SITE_CONFIG.whatsappLink);
   const currentYear = new Date().getFullYear();
 
-  const { headline, primaryCta, secondaryCta, quickContactLabel, quickContactLinkLabel, socialLabel, socialLinks, privacyHref, attribution } =
+  const { headline, primaryCta, secondaryCta, quickContactLabel, quickContactLinkLabel, socialLabel, socialLinks, privacyHref, termsHref, attribution } =
     FOOTER_LANDING_CONTENT;
+
+  const legalLinks = (
+    <div className="flex flex-wrap justify-center sm:justify-end gap-x-6 gap-y-2">
+      {privacyHref ? (
+        <Link href={privacyHref} className={`hover:text-foreground ${linkFocus}`}>
+          Privacy policy
+        </Link>
+      ) : null}
+      {termsHref ? (
+        <Link href={termsHref} className={`hover:text-foreground ${linkFocus}`}>
+          Terms of service
+        </Link>
+      ) : null}
+      {attribution ? <span className="text-center sm:text-right max-w-xs sm:max-w-none">{attribution}</span> : null}
+    </div>
+  );
 
   const sitemapLinks = (
     <nav aria-label="Site links" className="flex flex-col gap-2">
@@ -164,14 +180,7 @@ export function Footer({
               <p className="text-center sm:text-left">
                 © {currentYear} {companyName}. All rights reserved.
               </p>
-              <div className="flex flex-wrap justify-center sm:justify-end gap-x-6 gap-y-2">
-                {privacyHref ? (
-                  <a href={privacyHref} className={`hover:text-foreground ${linkFocus}`}>
-                    Privacy policy
-                  </a>
-                ) : null}
-                {attribution ? <span className="text-center sm:text-right max-w-xs sm:max-w-none">{attribution}</span> : null}
-              </div>
+              {legalLinks}
             </div>
           </div>
         </div>
@@ -224,9 +233,12 @@ export function Footer({
             </a>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground text-center sm:text-left border-t border-border/70 pt-6">
-          © {currentYear} {companyName}. All rights reserved.
-        </p>
+        <div className="border-t border-border/70 pt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-xs font-medium uppercase tracking-widest text-muted-foreground">
+          <p className="text-center sm:text-left">
+            © {currentYear} {companyName}. All rights reserved.
+          </p>
+          {legalLinks}
+        </div>
       </div>
     </footer>
   );
