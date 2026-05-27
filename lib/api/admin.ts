@@ -97,6 +97,10 @@ export const adminApi = {
     const res = await adminClient.get(`/admin/customers/${id}/orders`);
     return res.data;
   },
+  async getCustomerBulkOrders(id: number) {
+    const res = await adminClient.get(`/admin/customers/${id}/bulk-orders`);
+    return res.data;
+  },
   async getCustomerCart(id: number) {
     const res = await adminClient.get(`/admin/customers/${id}/cart`);
     return res.data;
@@ -158,6 +162,10 @@ export const adminApi = {
   // Orders
   async getOrders() {
     const res = await adminClient.get("/admin/orders");
+    return res.data;
+  },
+  async getOrder(id: number) {
+    const res = await adminClient.get(`/admin/orders/${id}`);
     return res.data;
   },
   async updateOrderStatus(id: number, status: string, note?: string) {

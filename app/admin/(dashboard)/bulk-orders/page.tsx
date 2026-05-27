@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { adminApi } from "@/lib/api/admin";
+import { OrderRouteSummary } from "@/components/orders/OrderRouteSummary";
 import { Badge, Button, Input, FormErrorAlert } from "@/components/ui";
 import { PaystackReferenceCopy } from "@/components/admin/PaystackReferenceCopy";
 import { getApiErrorDetails, showApiErrorToast, type ParsedApiError } from "@/lib/errors/apiError";
@@ -218,11 +220,15 @@ function BulkDetailDrawer({ bulk, onClose, onUpdated }: BulkDetailProps) {
                             {item.status}
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground">{item.delivery_address}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Pickup zone ID: {item.pickup_region_id}
-                          {item.pickup_address && ` — ${item.pickup_address}`}
-                        </p>
+                        <div className="mt-2">
+                          <OrderRouteSummary
+                            pickupRegionName={item.pickup_region_name}
+                            pickupAddress={item.pickup_address}
+                            deliveryRegionName={item.delivery_region_name}
+                            deliveryRegionAreaName={item.delivery_region_area_name}
+                            deliveryAddress={item.delivery_address}
+                          />
+                        </div>
                         <p className="text-xs font-medium text-foreground">
                           ₦{(item.price_ngn || 0).toLocaleString()}
                           {item.eta_label && (
@@ -273,6 +279,9 @@ function BulkDetailDrawer({ bulk, onClose, onUpdated }: BulkDetailProps) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function BulkOrdersPage() {
+  const searchParams = useSearchParams();
+  const highlightHandled = useRef(false);
+
   const [bulkOrders, setBulkOrders] = useState<BulkOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -295,7 +304,7 @@ export default function BulkOrdersPage() {
     fetchBulkOrders();
   }, [fetchBulkOrders]);
 
-  const openDetail = async (id: number) => {
+  const openDetail = useCallback(async (id: number) => {
     setLoadingDetail(true);
     try {
       const res = await adminApi.getBulkOrder(id);
@@ -306,7 +315,17 @@ export default function BulkOrdersPage() {
     } finally {
       setLoadingDetail(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (highlightHandled.current || loading) return;
+    const highlightId = searchParams.get("highlight");
+    if (!highlightId) return;
+    const id = Number(highlightId);
+    if (!Number.isInteger(id) || id < 1) return;
+    highlightHandled.current = true;
+    openDetail(id);
+  }, [loading, searchParams, openDetail]);
 
   const filtered = bulkOrders.filter((b) => {
     const q = search.toLowerCase();

@@ -26,6 +26,9 @@ export interface Order {
   pickup_region_id?: number | null;
   delivery_region_id?: number | null;
   delivery_region_area_id?: number | null;
+  pickup_region_name?: string | null;
+  delivery_region_name?: string | null;
+  delivery_region_area_name?: string | null;
   eta_min_hours?: number | null;
   eta_max_hours?: number | null;
   eta_label?: string | null;
@@ -44,10 +47,12 @@ export interface OrderEvent {
 export interface OrderDetail extends Order {
   sender_phone: string;
   receiver_phone: string;
+  paystack_reference?: string | null;
   package_description?: string;
   zone_id?: number | null;
   distance_km?: number | null;
   events: OrderEvent[];
+  type?: 'single';
 }
 
 // API request types
@@ -176,7 +181,7 @@ export interface OrdersResponse {
 
 export interface TrackOrderResponse {
   success: boolean;
-  data: OrderDetail;
+  data: OrderDetail | BulkOrderDetail;
 }
 
 export interface ProfileResponse {
@@ -239,10 +244,13 @@ export interface BulkOrderItem {
   sort_index: number;
   /** Required per-item pickup zone */
   pickup_region_id: number;
+  pickup_region_name?: string | null;
   /** Effective pickup street address (override or inherited from parent) */
   pickup_address: string;
   delivery_region_id: number;
+  delivery_region_name?: string | null;
   delivery_region_area_id?: number | null;
+  delivery_region_area_name?: string | null;
   delivery_address: string;
   receiver_name: string;
   receiver_phone: string;

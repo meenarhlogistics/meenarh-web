@@ -4,22 +4,30 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button, Input } from "@/components/ui";
 import { OrderTimeline } from "@/components/dashboard/OrderTimeline";
+import { BulkTrackView } from "@/components/dashboard/BulkTrackView";
 import { ordersApi } from "@/lib/api/orders";
-import type { OrderDetail } from "@/types";
+import type { OrderDetail, BulkOrderDetail } from "@/types";
 import { FormErrorAlert } from "@/components/ui";
 import { getApiErrorDetails, type ParsedApiError } from "@/lib/errors/apiError";
+
+type TrackResult =
+  | (OrderDetail & { type?: "single" })
+  | (BulkOrderDetail & { type: "bulk" });
+
+function isBulkOrder(data: TrackResult): data is BulkOrderDetail & { type: "bulk" } {
+  return data.type === "bulk" || data.tracking_number.startsWith("MN-B-");
+}
 
 export default function TrackOrderPage() {
   const searchParams = useSearchParams();
   const trackingParam = searchParams.get("tracking");
 
   const [trackingNumber, setTrackingNumber] = useState(trackingParam || "");
-  const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [trackResult, setTrackResult] = useState<TrackResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorDetails, setErrorDetails] = useState<ParsedApiError | null>(null);
 
   useEffect(() => {
-    // Auto-track if tracking number in URL
     if (trackingParam) {
       handleTrack();
     }
@@ -34,12 +42,12 @@ export default function TrackOrderPage() {
 
     setErrorDetails(null);
     setIsLoading(true);
-    setOrder(null);
+    setTrackResult(null);
 
     try {
       const response = await ordersApi.trackOrder(trackingNumber.trim());
       if (response.success) {
-        setOrder(response.data);
+        setTrackResult(response.data as TrackResult);
       }
     } catch (err) {
       console.error("Track order error:", err);
@@ -56,6 +64,10 @@ export default function TrackOrderPage() {
     handleTrack();
   };
 
+  const singleOrder =
+    trackResult && !isBulkOrder(trackResult) ? trackResult : null;
+  const bulkOrder = trackResult && isBulkOrder(trackResult) ? trackResult : null;
+
   return (
     <div className="space-y-6">
       <div>
@@ -67,13 +79,12 @@ export default function TrackOrderPage() {
         </p>
       </div>
 
-      {/* Search Form */}
       <form onSubmit={handleSubmit} className="max-w-2xl">
         <div className="flex gap-3">
           <div className="flex-1">
             <Input
               type="text"
-              placeholder="Enter tracking number (e.g., MN-2026-0001)"
+              placeholder="Enter tracking number (e.g., MN-2026-0001 or MN-B-2026-0001)"
               value={trackingNumber}
               onChange={(e) => setTrackingNumber(e.target.value)}
               className="font-mono"
@@ -97,7 +108,6 @@ export default function TrackOrderPage() {
         />
       </div>
 
-      {/* Loading State */}
       {isLoading && (
         <div className="text-center py-16">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -105,10 +115,9 @@ export default function TrackOrderPage() {
         </div>
       )}
 
-      {/* Order Timeline */}
-      {order && !isLoading && (
+      {singleOrder && !isLoading && (
         <div className="max-w-4xl">
-          {order.status === "Pending Payment" && (
+          {singleOrder.status === "Pending Payment" && (
             <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
               <p className="text-sm text-amber-800 dark:text-amber-300">
                 We are waiting for your payment to clear. Your order is reserved; delivery updates
@@ -121,15 +130,28 @@ export default function TrackOrderPage() {
               Tracking Number
             </p>
             <p className="text-xl font-bold text-foreground font-mono">
-              {order.tracking_number}
+              {singleOrder.tracking_number}
             </p>
           </div>
-          <OrderTimeline order={order} />
+          <OrderTimeline order={singleOrder} />
         </div>
       )}
 
-      {/* Empty State */}
-      {!order && !isLoading && !errorDetails && (
+      {bulkOrder && !isLoading && (
+        <div className="max-w-4xl">
+          <div className="mb-6 p-4 bg-accent/30 rounded-lg border border-border">
+            <p className="text-sm text-muted-foreground mb-1">
+              Tracking Number
+            </p>
+            <p className="text-xl font-bold text-foreground font-mono">
+              {bulkOrder.tracking_number}
+            </p>
+          </div>
+          <BulkTrackView bulk={bulkOrder} />
+        </div>
+      )}
+
+      {!trackResult && !isLoading && !errorDetails && (
         <div className="text-center py-16">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <svg

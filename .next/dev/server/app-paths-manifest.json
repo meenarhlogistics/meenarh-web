@@ -1,8 +1,7 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/signup/page": "app/signup/page.js",
-  "/(marketing)/page": "app/(marketing)/page.js",
-  "/(marketing)/terms/page": "app/(marketing)/terms/page.js",
-  "/(marketing)/privacy/page": "app/(marketing)/privacy/page.js",
-  "/(marketing)/faq/page": "app/(marketing)/faq/page.js"
+  "/dashboard/track/page": "app/dashboard/track/page.js",
+  "/admin/(dashboard)/bulk-orders/page": "app/admin/(dashboard)/bulk-orders/page.js",
+  "/admin/(dashboard)/page": "app/admin/(dashboard)/page.js",
+  "/admin/(dashboard)/orders/[id]/page": "app/admin/(dashboard)/orders/[id]/page.js",
+  "/admin/(dashboard)/customers/[id]/page": "app/admin/(dashboard)/customers/[id]/page.js"
 }

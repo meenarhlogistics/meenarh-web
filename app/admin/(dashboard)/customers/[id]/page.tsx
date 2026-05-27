@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { adminApi } from "@/lib/api/admin";
 import { Badge, Button } from "@/components/ui";
+import type { BulkOrder } from "@/types";
 
 interface CustomerDetail {
   id: number;
@@ -36,25 +37,31 @@ interface CartItem {
   created_at: string;
 }
 
+type OrderSubTab = "single" | "bulk";
+
 export default function CustomerDetailPage() {
   const params = useParams();
   const customerId = Number(params.id);
 
   const [customer, setCustomer] = useState<CustomerDetail | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [bulkOrders, setBulkOrders] = useState<BulkOrder[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"orders" | "cart">("orders");
+  const [orderSubTab, setOrderSubTab] = useState<OrderSubTab>("single");
 
   const fetchData = useCallback(async () => {
     try {
-      const [customerRes, ordersRes, cartRes] = await Promise.all([
+      const [customerRes, ordersRes, bulkRes, cartRes] = await Promise.all([
         adminApi.getCustomer(customerId),
         adminApi.getCustomerOrders(customerId),
+        adminApi.getCustomerBulkOrders(customerId),
         adminApi.getCustomerCart(customerId),
       ]);
       setCustomer(customerRes.data);
       setOrders(ordersRes.data || []);
+      setBulkOrders(bulkRes.data || []);
       setCart(cartRes.data || []);
     } catch (err) {
       console.error("Failed to fetch customer:", err);
@@ -66,6 +73,15 @@ export default function CustomerDetailPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    if (orderSubTab === "single" && orders.length === 0 && bulkOrders.length > 0) {
+      setOrderSubTab("bulk");
+    }
+    if (orderSubTab === "bulk" && bulkOrders.length === 0 && orders.length > 0) {
+      setOrderSubTab("single");
+    }
+  }, [orderSubTab, orders.length, bulkOrders.length]);
 
   if (loading) {
     return (
@@ -93,7 +109,6 @@ export default function CustomerDetailPage() {
         <span className="text-foreground">{customer.name}</span>
       </div>
 
-      {/* Profile Card */}
       <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-start gap-4">
           <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-semibold text-primary shrink-0">
@@ -113,7 +128,6 @@ export default function CustomerDetailPage() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex flex-col sm:flex-row gap-2">
         <Button
           variant={tab === "orders" ? "primary" : "secondary"}
@@ -121,7 +135,7 @@ export default function CustomerDetailPage() {
           onClick={() => setTab("orders")}
           className="w-full sm:w-auto"
         >
-          Orders ({orders.length})
+          Orders ({orders.length + bulkOrders.length})
         </Button>
         <Button
           variant={tab === "cart" ? "primary" : "secondary"}
@@ -133,43 +147,115 @@ export default function CustomerDetailPage() {
         </Button>
       </div>
 
-      {/* Orders Tab */}
       {tab === "orders" && (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[640px]">
-            <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="text-left p-4 font-medium text-muted-foreground">Tracking</th>
-                <th className="text-left p-4 font-medium text-muted-foreground">Receiver</th>
-                <th className="text-left p-4 font-medium text-muted-foreground">Destination</th>
-                <th className="text-left p-4 font-medium text-muted-foreground">Price</th>
-                <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
-                <th className="text-left p-4 font-medium text-muted-foreground">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.length === 0 ? (
-                <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No orders yet.</td></tr>
-              ) : (
-                orders.map((o) => (
-                  <tr key={o.id} className="border-b border-border/50">
-                    <td className="p-4 font-mono text-xs text-foreground">{o.tracking_number}</td>
-                    <td className="p-4 text-foreground">{o.receiver_name}</td>
-                    <td className="p-4 text-muted-foreground max-w-[200px] truncate">{o.delivery_address}</td>
-                    <td className="p-4 text-foreground">₦{(o.price || 0).toLocaleString()}</td>
-                    <td className="p-4"><Badge variant={statusColor(o.status)}>{o.status}</Badge></td>
-                    <td className="p-4 text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2 border-b border-border pb-3">
+            <button
+              type="button"
+              onClick={() => setOrderSubTab("single")}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                orderSubTab === "single"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Single orders ({orders.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setOrderSubTab("bulk")}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                orderSubTab === "bulk"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Bulk orders ({bulkOrders.length})
+            </button>
           </div>
+
+          {orderSubTab === "single" && (
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[640px]">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/30">
+                      <th className="text-left p-4 font-medium text-muted-foreground">Tracking</th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">Receiver</th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">Destination</th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">Price</th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">Date</th>
+                      <th className="text-right p-4 font-medium text-muted-foreground">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.length === 0 ? (
+                      <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">No single orders yet.</td></tr>
+                    ) : (
+                      orders.map((o) => (
+                        <tr key={o.id} className="border-b border-border/50">
+                          <td className="p-4 font-mono text-xs text-foreground">{o.tracking_number}</td>
+                          <td className="p-4 text-foreground">{o.receiver_name}</td>
+                          <td className="p-4 text-muted-foreground max-w-[200px] truncate">{o.delivery_address}</td>
+                          <td className="p-4 text-foreground">₦{(o.price || 0).toLocaleString()}</td>
+                          <td className="p-4"><Badge variant={statusColor(o.status)}>{o.status}</Badge></td>
+                          <td className="p-4 text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</td>
+                          <td className="p-4 text-right">
+                            <Link href={`/admin/orders/${o.id}`}>
+                              <Button variant="secondary" size="sm">View</Button>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {orderSubTab === "bulk" && (
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[640px]">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/30">
+                      <th className="text-left p-4 font-medium text-muted-foreground">Tracking</th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">Items</th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">Price</th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">Date</th>
+                      <th className="text-right p-4 font-medium text-muted-foreground">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bulkOrders.length === 0 ? (
+                      <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No bulk orders yet.</td></tr>
+                    ) : (
+                      bulkOrders.map((b) => (
+                        <tr key={b.id} className="border-b border-border/50">
+                          <td className="p-4 font-mono text-xs text-foreground">{b.tracking_number}</td>
+                          <td className="p-4 text-foreground">{b.item_count ?? "—"}</td>
+                          <td className="p-4 text-foreground">₦{(b.price || 0).toLocaleString()}</td>
+                          <td className="p-4"><Badge variant={statusColor(b.status)}>{b.status}</Badge></td>
+                          <td className="p-4 text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</td>
+                          <td className="p-4 text-right">
+                            <Link href={`/admin/bulk-orders?highlight=${b.id}`}>
+                              <Button variant="secondary" size="sm">View</Button>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Cart Tab */}
       {tab === "cart" && (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="overflow-x-auto">

@@ -1,4 +1,5 @@
 import type { OrderDetail } from "@/types";
+import { OrderRouteSummary } from "@/components/orders/OrderRouteSummary";
 
 interface OrderTimelineProps {
   order: OrderDetail;
@@ -34,6 +35,13 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
     <div className="space-y-6">
       {/* Order Details */}
       <div className="bg-card rounded-xl p-6 border border-border">
+        <OrderRouteSummary
+          pickupRegionName={order.pickup_region_name}
+          pickupAddress={order.pickup_address}
+          deliveryRegionName={order.delivery_region_name}
+          deliveryRegionAreaName={order.delivery_region_area_name}
+          deliveryAddress={order.delivery_address}
+        />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-4">
