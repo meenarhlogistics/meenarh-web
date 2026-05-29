@@ -6,6 +6,7 @@ import { adminApi } from "@/lib/api/admin";
 import { OrderRouteSummary } from "@/components/orders/OrderRouteSummary";
 import { Badge, Button, Input, FormErrorAlert } from "@/components/ui";
 import { PaystackReferenceCopy } from "@/components/admin/PaystackReferenceCopy";
+import { ReconcilePaystackButton } from "@/components/admin/ReconcilePaystackButton";
 import { getApiErrorDetails, showApiErrorToast, type ParsedApiError } from "@/lib/errors/apiError";
 import type { BulkOrder, BulkOrderDetail, BulkOrderItem } from "@/types";
 
@@ -177,10 +178,18 @@ function BulkDetailDrawer({ bulk, onClose, onUpdated }: BulkDetailProps) {
             </div>
 
             {paymentPending && (
-              <p className="text-sm text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-                Payment is not confirmed yet. Item delivery updates are blocked until the system
-                confirms payment.
-              </p>
+              <div className="space-y-3">
+                <p className="text-sm text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                  Payment is not confirmed yet. Item delivery updates are blocked until payment is
+                  confirmed. If the customer has already paid, check Paystack to sync status.
+                </p>
+                <ReconcilePaystackButton
+                  reference={bulk.paystack_reference}
+                  onReconciled={onUpdated}
+                  variant="primary"
+                  className="w-full sm:w-auto"
+                />
+              </div>
             )}
 
             {/* Bulk summary */}
@@ -422,14 +431,28 @@ export default function BulkOrdersPage() {
                       {new Date(bulk.created_at).toLocaleDateString()}
                     </td>
                     <td className="p-4 text-right">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={loadingDetail}
-                        onClick={() => openDetail(bulk.id)}
-                      >
-                        View / Update
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-2 justify-end items-end">
+                        {bulk.status === PENDING_PAYMENT_STATUS && bulk.paystack_reference && (
+                          <ReconcilePaystackButton
+                            reference={bulk.paystack_reference}
+                            onReconciled={() => {
+                              fetchBulkOrders();
+                              if (selectedBulk?.id === bulk.id) {
+                                openDetail(bulk.id);
+                              }
+                            }}
+                            size="sm"
+                          />
+                        )}
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={loadingDetail}
+                          onClick={() => openDetail(bulk.id)}
+                        >
+                          View / Update
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))

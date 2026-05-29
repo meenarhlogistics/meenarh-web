@@ -1,7 +1,8 @@
 {
-  "/dashboard/track/page": "app/dashboard/track/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/(marketing)/page": "app/(marketing)/page.js",
+  "/admin/(dashboard)/orders/page": "app/admin/(dashboard)/orders/page.js",
   "/admin/(dashboard)/bulk-orders/page": "app/admin/(dashboard)/bulk-orders/page.js",
-  "/admin/(dashboard)/page": "app/admin/(dashboard)/page.js",
   "/admin/(dashboard)/orders/[id]/page": "app/admin/(dashboard)/orders/[id]/page.js",
-  "/admin/(dashboard)/customers/[id]/page": "app/admin/(dashboard)/customers/[id]/page.js"
+  "/dashboard/track/page": "app/dashboard/track/page.js"
 }

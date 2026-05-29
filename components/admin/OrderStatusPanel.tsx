@@ -4,6 +4,7 @@ import { useState } from "react";
 import { adminApi } from "@/lib/api/admin";
 import { Button, Input, FormErrorAlert } from "@/components/ui";
 import { PaystackReferenceCopy } from "@/components/admin/PaystackReferenceCopy";
+import { ReconcilePaystackButton } from "@/components/admin/ReconcilePaystackButton";
 import { getApiErrorDetails, showApiErrorToast, type ParsedApiError } from "@/lib/errors/apiError";
 
 const PENDING_PAYMENT_STATUS = "Pending Payment";
@@ -86,10 +87,22 @@ export function OrderStatusPanel({
       </div>
 
       {isPendingPayment && (
-        <p className="text-sm text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-          Payment has not been confirmed yet. You can add an internal note only. Delivery status
-          updates unlock after the system confirms payment.
-        </p>
+        <div className="space-y-3">
+          <p className="text-sm text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+            Payment has not been confirmed yet. You can add an internal note only, or check Paystack
+            now if the customer has already paid. Delivery status updates unlock after payment is
+            confirmed.
+          </p>
+          <ReconcilePaystackButton
+            reference={order.paystack_reference}
+            onReconciled={() => {
+              onUpdated();
+              onClose?.();
+            }}
+            variant="primary"
+            className="w-full"
+          />
+        </div>
       )}
 
       <FormErrorAlert message={errorDetails?.message} items={errorDetails?.items} />

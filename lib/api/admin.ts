@@ -172,6 +172,16 @@ export const adminApi = {
     const res = await adminClient.patch(`/admin/orders/${id}/status`, { status, note });
     return res.data;
   },
+  async reconcilePayment(reference: string) {
+    const res = await adminClient.post("/admin/payments/reconcile", { reference });
+    return res.data as {
+      success: boolean;
+      payment_state: "confirmed" | "pending_payment";
+      paystack_status?: string;
+      message: string;
+      data?: unknown;
+    };
+  },
 
   // Bulk orders
   async getBulkOrders() {

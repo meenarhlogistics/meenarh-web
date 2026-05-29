@@ -6,6 +6,7 @@ import { adminApi } from "@/lib/api/admin";
 import { Badge, Button, Input } from "@/components/ui";
 import { PaystackReferenceCopy } from "@/components/admin/PaystackReferenceCopy";
 import { OrderStatusPanel } from "@/components/admin/OrderStatusPanel";
+import { ReconcilePaystackButton } from "@/components/admin/ReconcilePaystackButton";
 import { showApiErrorToast } from "@/lib/errors/apiError";
 
 interface Order {
@@ -201,7 +202,14 @@ export default function OrdersPage() {
                       {new Date(order.created_at).toLocaleDateString()}
                     </td>
                     <td className="p-4 text-right">
-                      <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                      <div className="flex flex-col sm:flex-row gap-2 justify-end items-end">
+                        {order.status === PENDING_PAYMENT_STATUS && order.paystack_reference && (
+                          <ReconcilePaystackButton
+                            reference={order.paystack_reference}
+                            onReconciled={fetchOrders}
+                            size="sm"
+                          />
+                        )}
                         <Link href={`/admin/orders/${order.id}`}>
                           <Button variant="secondary" size="sm">
                             View
